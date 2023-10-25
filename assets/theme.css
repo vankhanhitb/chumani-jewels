@@ -5113,6 +5113,7 @@ hr {
   background-color: var(--color-btn-primary);
   color: var(--color-btn-primary-text);
   min-height: 3.125rem;
+  line-height: 2.5; }
   @media only screen and (max-width: 749px) {
     .slideshow__btn {
       display: none; } }
