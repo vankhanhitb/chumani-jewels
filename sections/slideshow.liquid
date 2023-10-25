@@ -54,11 +54,11 @@
                   data-bgset="{% include 'bgset', image: block_image %}"
                   data-sizes="auto"
                   data-parent-fit="contain"
-                  style="background-position: {{ block.settings.alignment }}; display: none"
+                  style="background-position: {{ block.settings.alignment }};display:none;"
                   data-image-loading-animation>
                 {% if section.settings.show_overlay %}<div class="slideshow__overlay"></div>{% endif %}
               </div>
-              <img src="{{ block_image | img_url: 'master' }}" alt="">
+              <img class="slideshow__image lazyload" data-src="{{ block_image | img_url: 'master' }}" alt="" width="{{ block_image.width }}" height="{{ block_image.height }}">
             {% endif %}
 
             <noscript>
@@ -894,7 +894,8 @@
             "vi": "Hình ảnh",
             "zh-CN": "图片",
             "zh-TW": "圖片"
-          }
+          },
+          "info": "Recommendation image size (1920x1080)"
         },
         {
           "type": "select",
