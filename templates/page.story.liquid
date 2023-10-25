@@ -1,0 +1,19 @@
+<style>
+  .grid__item {padding-left: 0px !important;}
+  body {text-transform: uppercase;}
+  .section-header {display: none;}
+</style>
+
+<div class="page-width story-grid" id="page-template-story">
+  <div>
+    <div class="grid__item medium-up--five-sixths medium-up--push-one-twelfth">
+      <div class="section-header text-center">
+        <h1>{{ page.title }}</h1>
+      </div>
+
+      <div class="rte">
+        {{ page.content }}
+      </div>
+    </div>
+  </div>
+</div>

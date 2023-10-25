@@ -1,0 +1,1053 @@
+{%- assign social_icons = false -%}
+{%- assign inline_list = false -%}
+{%- assign locale_selector = false -%}
+{%- assign country_selector = false -%}
+{%- assign show_payment_icons = false -%}
+{%- assign show_selectors = false -%}
+
+
+{%- assign show_country_selector = section.settings.show_currency_selector  -%}
+{%- if show_country_selector and localization.available_countries.size > 1 -%}
+  {%- assign country_selector = true -%}
+{%- endif -%}
+
+{%- if section.settings.show_locale_selector and localization.available_languages.size > 1 -%}
+  {%- assign locale_selector = true -%}
+{%- endif -%}
+
+{%- if section.settings.show_payment_icons -%}
+  {%- unless shop.enabled_payment_types == empty -%}
+    {%- assign show_payment_icons = true -%}
+  {%- endunless -%}
+{%- endif -%}
+
+{%- if country_selector or locale_selector -%}
+  {%- assign show_selectors = true -%}
+{%- endif -%}
+
+{%- if
+  settings.social_twitter_link != blank
+  or settings.social_facebook_link != blank
+  or settings.social_pinterest_link != blank
+  or settings.social_instagram_link != blank
+  or settings.social_tumblr_link != blank
+  or settings.social_snapchat_link != blank
+  or settings.social_youtube_link != blank
+  or settings.social_vimeo_link != blank
+  or request.page_type == 'article'
+  or request.page_type == 'blog'
+-%}
+  {%- assign social_icons = true -%}
+{%- endif -%}
+
+{%- assign payment_width_class = "one-half" -%}
+{%- if show_selectors -%}
+  {%- unless social_icons -%}
+    {%- assign payment_width_class = "" -%}
+  {%- endunless -%}
+{%- endif -%}
+
+{%- assign copyright_show_class = "medium-up--hide" -%}
+{%- if social_icons -%}
+  {%- unless show_selectors -%}
+    {%- assign copyright_show_class = "" -%}
+  {%- endunless -%}
+{%- endif -%}
+
+{%- case section.blocks.size -%}
+  {%- when 1 -%}
+    {%- assign footer_item = 'site-footer__item--full-width' -%}
+    {%- assign inline_list = true -%}
+  {%- when 2 -%}
+    {%- assign footer_item = 'site-footer__item--one-half' -%}
+    {%- assign inline_list = true -%}
+  {%- when 3 -%}
+    {%- assign footer_item = 'site-footer__item--one-third' -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'newsletter' -%}
+        {%- assign footer_item = 'site-footer__item--one-quarter' -%}
+        {%- break -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- when 4 -%}
+    {%- assign footer_item = 'site-footer__item--one-quarter' -%}
+  {%- when 5 -%}
+    {%- assign footer_item = 'site-footer__item--one-fifth' -%}
+{%- endcase -%}
+
+{% comment %} Create an appropriate hover color based on text color and brightness {% endcomment %}
+{%- assign footer_text_color = section.settings.color_footer_text -%}
+{%- assign footer_text_color_brightness = section.settings.color_footer_text | color_brightness -%}
+{%- if footer_text_color_brightness <= 26 -%}
+  {%- assign footer_text_color_hover = footer_text_color | color_lighten: 25 -%}
+{%- elsif footer_text_color_brightness <= 65 -%}
+  {%- assign footer_text_color_hover = footer_text_color | color_lighten: 15 -%}
+{%- else -%}
+  {%- assign footer_text_color_hover = footer_text_color | color_darken: 10 -%}
+{%- endif -%}
+
+
+
+<style>
+  
+  .site-footer__hr {
+    border-bottom: 1px solid {{ section.settings.color_footer_bg | color_darken: 10 }};
+  }
+
+  .site-footer p,
+  .site-footer__linklist-item a,
+  .site-footer__rte a,
+  .site-footer h4,
+  .site-footer small,
+  .site-footer__copyright-content a,
+  .site-footer__newsletter-error,
+  .site-footer__social-icons .social-icons__link {
+    color: {{ section.settings.color_footer_text }};
+  }
+
+  .site-footer {
+    color: {{ section.settings.color_footer_text }};
+    background-color: {{ section.settings.color_footer_bg }};
+  }
+
+  .site-footer__rte a {
+    border-bottom: 1px solid {{ section.settings.color_footer_text }};
+  }
+
+  .site-footer__rte a:hover,
+  .site-footer__linklist-item a:hover,
+  .site-footer__copyright-content a:hover {
+    color: {{ footer_text_color_hover }};
+    border-bottom: 1px solid {{ footer_text_color_hover }};
+  }
+
+  .site-footer__social-icons .social-icons__link:hover {
+    color: {{ footer_text_color_hover }};
+  }
+  
+  .logo-footer{
+  	width: 100%;
+    text-align: left;
+  }
+  .logo-footer img{
+  	max-width: 80px;
+  }
+  #ETBIS{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .qr-code{
+    min-width: 100px;
+  }
+</style>
+
+
+{%- capture payment_icon_markup -%}
+  {%- if show_payment_icons -%}
+    <div class="grid__item site-footer__payment-icons">
+      <span class="visually-hidden">{{ 'general.payment.method' | t }}</span>
+      <ul class="payment-icons list--inline site-footer__icon-list">
+        {%- for type in shop.enabled_payment_types -%}
+          <li class="payment-icon">
+            {{ type | payment_type_svg_tag: class: 'icon icon--full-color' }}
+          </li>
+        {%- endfor -%}
+      </ul>
+
+   </div>
+  {%- endif -%}
+{%- endcapture -%}
+
+
+
+<footer class="site-footer critical-hidden" role="contentinfo" data-section-id="{{ section.id }}" data-section-type="footer-section">
+  <div class="page-width">
+    <div class="site-footer__content">
+
+      {%- for block in section.blocks -%}
+      
+    
+        <div class="site-footer__item
+                    {% if section.blocks.size == 1 %} site-footer__item--center{% endif %}
+                    {{ footer_item }}
+                    {% if block.type == 'newsletter' and section.blocks.size == 3 %}site-footer-newsletter__one-half{% endif %}"
+             {{ block.shopify_attributes }}>
+          <div class="site-footer__item-inner site-footer__item-inner--{{ block.type }}">
+		
+            {%- if block.settings.title -%}
+              <p class="h4">{{ block.settings.title | escape }}</p>
+            {%- endif -%}
+
+            {%- case block.type -%}
+
+            
+              {%- when 'newsletter' -%}
+            <div class="klaviyo-form-TQTLPv"></div>
+              
+
+              
+            
+              {%- when 'text' -%}
+                {%- if block.settings.text != blank -%}
+                  <div class="site-footer__rte
+                              {% if section.blocks.size == 1 %} site-footer__single-block--centered{% endif %}">
+                      {{ block.settings.text }}
+                  </div>
+                {%- endif -%}
+
+              {%- when 'link_list' -%}
+                {%- assign footer_linklist = block.settings.menu -%}
+                  <ul class="site-footer__linklist
+                            {% if inline_list %}list--inline{% endif %}">
+                    {%- for link in linklists[footer_linklist].links -%}
+                      <li class="site-footer__linklist-item">
+                        <a href="{{ link.url }}"
+                          {% if link.current %} aria-current="page"{% endif %}
+                        >
+                          {{ link.title | escape }}
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+
+            {%- endcase -%}
+          </div>
+
+        </div>
+      {%- endfor -%}
+
+     
+  </div>
+  
+ 
+
+  <hr class="site-footer__hr">
+  
+
+
+  {%- assign socials = "Facebook Twitter Pinterest Instagram Tumblr Snapchat YouTube Vimeo" | split: ' ' -%}
+
+  <div class="page-width">
+    <div class="grid grid--no-gutters small--text-center grid--footer-float-right">
+      
+      {%- if show_selectors -%}
+        <div class="grid__item one-half small--one-whole">
+          {%- form 'localization', class: 'selectors-form', data-disclosure-form: '' -%}
+            {%- if locale_selector -%}
+              <div class="selectors-form__item">
+                <h2 class="visually-hidden" id="lang-heading">
+                  {{ 'general.language.dropdown_label' | t }}
+                </h2>
+
+                <div class="disclosure" data-disclosure-locale>
+                  <button type="button" class="disclosure__toggle" aria-expanded="false" aria-controls="lang-list" aria-describedby="lang-heading" data-disclosure-toggle>
+                    {{ localization.language.endonym_name }}
+                  </button>
+                  <ul id="lang-list" class="disclosure-list" data-disclosure-list>
+                    {% for language in localization.available_languages %}
+                      <li class="disclosure-list__item {% if language.iso_code == localization.language.iso_code %}disclosure-list__item--current{% endif %}">
+                        <a class="disclosure-list__option" href="#" lang="{{ language.iso_code }}" {% if language.iso_code == localization.language.iso_code %}aria-current="true"{% endif %} data-value="{{ language.iso_code }}" data-disclosure-option>
+                          {{ language.endonym_name }}
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                  <input type="hidden" name="locale_code" id="LocaleSelector" value="{{ form.current_locale.iso_code }}" data-disclosure-input/>
+                </div>
+              </div>
+            {%- endif -%}
+
+            {%- if country_selector -%}
+              <div class="selectors-form__item">
+                <h2 class="visually-hidden" id="country-heading">
+                  {{ 'general.country.dropdown_label' | t }}
+                </h2>
+                {%- assign current_currency_symbol = localization.country.currency.symbol -%}
+                {%- assign current_currency_iso_code = localization.country.currency.iso_code -%}
+                <div class="disclosure" data-disclosure-country>
+                  <button type="button" class="disclosure__toggle" aria-expanded="false" aria-controls="country-list" aria-describedby="country-heading" data-disclosure-toggle>
+                    {%- if current_currency_symbol -%}
+                      {{ localization.country.name }} ({{ current_currency_iso_code }} {{ current_currency_symbol }})
+                    {%- else -%}
+                      {{ localization.country.name }} ({{ current_currency_iso_code }})
+                    {%- endif -%}
+                  </button>
+                  <ul id="country-list" class="disclosure-list" data-disclosure-list>
+                    {% for country in form.available_countries %}
+                      {%- assign currency_symbol = country.currency.symbol -%}
+                      {%- assign currency_iso_code = country.currency.iso_code -%}
+                      <li class="disclosure-list__item {% if country.iso_code == localization.country.iso_code %}disclosure-list__item--current{% endif %}">
+                        <a class="disclosure-list__option" href="#" {% if country.iso_code == localization.country.iso_code %}aria-current="true"{% endif %} data-value="{{ country.iso_code }}" data-disclosure-option>
+                          {%- if currency_symbol -%}
+                            {{ country.name }} ({{ currency_iso_code }} {{ currency_symbol }})
+                          {%- else -%}
+                            {{ country.name }} ({{ currency_iso_code }})
+                          {%- endif -%}
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                  <input type="hidden" name="country_code" id="CountrySelector" value="{{ localization.country.iso_code }}" data-disclosure-input/>
+                </div>
+              </div>
+            {%- endif -%}
+          {%- endform -%}
+        </div>
+      {%- else -%}
+        <div class="grid__item small--hide {{ payment_width_class }} {% if show_payment_icons %}site-footer-item-center-vertically{% endif %}">{{ payment_icon_markup }}</div>
+      {%- endif -%}
+
+     
+
+      <div class="grid__item {% if show_selectors or show_payment_icons %}one-half{% endif %} small--one-whole site-footer-item-tall">
+         <div id="ETBIS">
+			<div id="3435206057304823" class="qr-code">
+				<a href="https://etbis.eticaret.gov.tr/sitedogrulama/3435206057304823" target="_blank">
+					<img src="data:image/jpeg;base64, iVBORw0KGgoAAAANSUhEUgAAAIIAAACWCAYAAAASRFBwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAET7SURBVHhe7Z0HvF1FtcYlQSAkJBQB6SBIBwUCAUMRqSIIUkR6C4JShBDpHQRUFJQOAkKAIB1CMyI97ebW5KaQBNJ775XMW/99zneyzj5zyk0u4fme3+/3Qe60vc/stWfWWrNm9jcMoTn4t7/9LYCZM2eGDTbYoCC/R48eSb7HrbfeWlDuwAMPzOaGcP755xfke7777rtJuc8//zy0bNkySbvmmmuSNLDbbrsV1Hn44YeTvNmzZ4eNNtqoIP+tt95K8j3uuuuugnIxtm7dOkyYMCFbqxAjR44M3/zmN5Oyv/3tb7OppTFv3ryw6aabJnVOPPHEbGoIP/3pT/OuvRJ82ZggltlklhOEWAfHBOF73/teNre8IHTv3j0pN3To0Fza1VdfnaSBbbbZJq887Nq1azY3hG9/+9sF+a+++mo2dzn++te/FpSLsZwgzJo1KycIN954Yza1PDbffPOkzioRhG233TacccYZTeJhhx2WazAmCN/5zndyZQcMGJDk0xlPP/10wptvvjmvPXj77bcn5UBMEHi4Ktu/f/+k3KRJk8JZZ52VpNHBav9Xv/pVknbEEUfk6p9zzjlJ3qOPPhratm2bpG299da5Nuvr65M258yZkwgNZX/+85/n6osbbrhhrs4OO+yQpHlB4O3XfYh//vOfcyPXUUcdVZAfI/263nrrJXVigsA1TzvttNy9VMJTTz01rL322kl9Y74g/PKXv8xeonJUV1ersaggdOrUKUnzGDJkSK7ODTfckE2Ng/oqK/IgS+HOO+/MlR0xYkSShsD4NtI888wzk3Iew4cPj5YV/RR2xRVXJGk8lIkTJyZpzzzzTEGdlWVMEBDiFcEWW2yhdvMFgTeqqXj//ffVWFQQzj333CTNY/z48WG11VZL8v3bHwPSq/bF448/Ppsbxx133JEri+4Aamtr89pI8/TTT0/KefBAY2XFvfbaK1syhMsvvzxJa9OmTTKSAKatdJ2VZUwQttxyy7Bo0aJsamVYsGBB2GyzzdRucUG46qqrkuG0GEePHp2UKycIKDnpuvvvv3+uDtNROp+3S2hsbEwUQk9NB+Daa69N6nDvX375ZZLmBeEHP/hBkr/PPvvk0mJEV/D3AE866aTwzjvvFFxffPLJJ3NleRi0w7D/wx/+MElD11H7t9xyS7SNUjz22GNz9cVygvDyyy/n7ilG6T8VC0KHDh1UKEoeEIgJwowZM/z802TuvPPOSTuVoGPHjkkd5mvBC8LKkLe7FAYOHBitF2PPnj2ztSpHly5dCto55phjsrlxQfDTYoy///3vk3IVC8IhhxySqxzj4MGDk3IxQcAs22OPPRKlzrNVq1Z5bcB11123oNzJJ5+ctAOmTJkSvvjiizxOnjw5mxsSKacdOoM5nXymG7W1xhprFFxTbNGiRVLPX9sTHWDp0qXZKy3H2LFjk+u89NJLBW0y5alNb5rSN/43FOO4ceOyVwnhkksuybXJfE6bv/71r7O5cUFAGdU1Y7z33nuTcqtEEMCSJUsKeOihh+a1Aa+77rqCcr7zL7zwwrD66qvn0St2EgQ6S/n4EdTWrrvuWnBNcZ111kk63l87zRj23HPP5DrS/j1RFseMGZPU7datWy6dsrq/UmQqEyQIjK6jRo1K2vR98x8hCDEcfvjheW1Ahr9S4KGn6/zkJz/J5i4XBE/vUJL9HSOm44qglHBBTFnw3HPPRfNLsX379kldgHWk9Jhv4j9WEORzwCZGAPCsoRSlwRv1hz/8ISHmJeU86WChnCD86U9/SuqccsopBeXWXHPNcNNNN+WulSZ+BimgHl4JFBntuA4jHFMjaGhoyLvvNA866KCCdtDNhNdeey0ph0KM7yWNVSIIBx98cK5yjCsjCDvuuGM2JY733nsv1+YTTzyRTY0jNsp4z6KAMytdrhzbtWtXsSA89dRT2dzK8eCDDxa0g3VTKWKCgOCn2/S85557knIVCwKKktJjHDRoUFJuRQRh++23z6bE8dFHH+Xa5K0shZjeceWVV2Zzl+OTTz4pKFeOeEVjiAnCAw88kM2tHLGH5n0T5RAThD/+8Y8FbXpyTVCxIHz22WehX79+RUlDICYIOFSYWpjvvD9dgsCQzA8m31POn5ggzJ07N3no6Tq8iel7Q6tPwwsCU0e6jqdMUn+f9913X7al5YKw++675+rg+6AcPpKpU6dmSy7HZZddlnff0Osvzz77bNLOiy++mMt//vnns7XjiAkCTjDdU4zSX0oKQqeIO7gc+vTpo8ZygoAfgU4kDaeM4NclYpSjKCYIOKnWWmutvPLw008/TfLLwQvC3//+92xqHOpgz9/85jfZ3JBbV/DD+AUXXJAry72mUU7nYtEMsM6htLvvvjtJKwbd54q6mJ0g5gvC0UcfXSBB5ciSrupLELxnERexEBsRtLwK5aSKCQLK0re+9a0kbf3118+9NRoREKJly5YlZdGwdX/z589P0rwgaBkaU4yOp5xGI8BiEOX8faKwqc3jjjsuSWMhSmkaETD//v3vfxe0Sd/SJn4NtelHhLq6uqScf7FY8QToKSietImvRJAg4BXt3bt37l4qIQ4u5+fIF4SVZaWC4HWE3/3ud7n6lQqCb1M6Ap0qG/u2227L1acDQUwQ0O5xaJF2wgknJGlAguB1BB+PoPvs27dvLk06wuLFi3O//Wc/+1mSBiQI/u31OkIpQSAeQb8dIRRiI9cKsnkF4f77709usJwgfPe7382m5D80edX8iqa3GiTB5513XjZleQezZiFgIqk+pijwVoMEAeHS4teRRx6ZpAEJwnbbbZdNCYmOoPpaZ0FhVpq3GhRv4N3BElicWBJYr9ixZA0QMqXJHYx+pDbpQyFmfq4gM4IQs6FXhJrjKxEEDeM+MAUHiuxmtSk/wqWXXppzUbMWIVucN4w03myGZ9IOOOCAXJtnn312kub9CBIEFCzeZK7zxhtvJGlAgoD5qDa9FYVSTRpr+kqTHwEyetAmQq403N6kPfLIIzmTlL/TbaLIkg5ramqScowymJqkvf7660kaeOWVV3JlV5IZQci222zwguDdwVKYGHIlCASmkOb5/e9/P8kDMc/iyrKcSYrnMlavUi5cuDBph4emtH/9619JmgcPwdeDu+yySzZ31cGeRXFBYPjyPvc09SD5v9Ik6V4QiJxRPl5A/Ok77bRTrj5vStrfjjNL8GsNtFeMfq2BxaRYGZFRQPcU449//OOCOrSp9sViaw1yB7/wwgu5dIXU+f5CENSWpijvWaQ//X1VwpgDzF8zRhtxigsCD9CvxKUp7bVXr165tH/84x9JmhcElnKVj43MCpvmbYCpmV6BI3BF0Ooj047CtWLEltbqI0NsrIyI4qV7ijG2hI5A+nuEsdXHcoKAj4OpkevgAVVbTHeU84LAaJm+t3JkOkoDhTlWVrTptbggEFxBVjHKaYMdrzRpuTxcpNyXhwjNioJ5kpiDdJuij0co511bEaK3pOGVRbGcIGBSKu2iiy5K0gCKKWk+FmNFpkUf1CPwEsXKOmYEgSicNJmns4WiZJ6lHP9H44ZaQELLxcZWuoiilL5OOUpD9+Yjvod02yiaGhabKzAF5ZTpjPavv/76gnvDotH1GZGoU04Q8Oxh6VDHu+QRCtLwQAooiGo/Rh/vIGKypu8TB1qsvmNGEAwFDVZKv35eDiti7sgk9YKAJVAKzSUI3iTFlEvnE5cgKGaxnCA0J4jdVPulyN6OUjAdYuUFwc9p5SDzsSn0fgRNDegvpVAuXKtSoucIMUHwLwHCqXT5Q3wUc8xqWFnEluBj3HvvvbM14igpCASvElMf6wBIOvk4b/AVwA8//DDbdByVCgK+fMX0o1DR9i9+8Yvc+kVMEIrta1DINt5MpYlMa9rXgECn85nKmKdpE3+G0jUNeEHAy0gesRJya/t9DZ07d871k0gEk8DUk84vRzyTaj9GFEHu0wsCwplu5/TTTy8uCFVVVUnFYiHd06ZNS/LxWyuNOa0UyimgIv4GgRtN5+McSqPYTifpOj/60Y+yKfmQJRITLqYjtcmDFLSNrimxA7Fp0SuLcow1heVGmf322y8p5wWhU2SfiDEjCCziQOa3bEYSHAL8ZhRPfOIIA9vYVB+PHWmeKI4Ccxrl8NjF2hT9xhGUJ7UvMgyrfawJgDYuu95HKOmh7bvvvrk6cviwXM5IQZsInPJFzC6mI/IJRxe4P9LwJqqsluWLAeGljtY2IGauIIHF2qIc1GorPgbqKV1EB+HaWGkC96F7UpteEFhF1fUdM4Iwffr0AH3ETDlBYEjlbcL5ovosxZLmif0t0PGUYy1BDpQYvSCw4KL2RfYTqH1W+kA5QaCDVYf6AEcLPg/a7Nq1ay5fpC5+DPI13ANGCtLoI5V97LHHsrlx6LcjXLFNsHporExSDrLzjDSsF0xVpYvscdB9Kh4BZ5nuSf1RsSBky4THH388l4nZAcrF7rOcKsSGcb/wItD5pQSBwI9SYF1AZRWPQMfoh7N+IcTM4Fg0EYKQLscIWQreh6IFonJghFQdb/PLj8BDFZjiSOM+fPSyoPUPHGBCLOrJ+ybQ/dL5xnxBYKlWCoSWWvHyKc2HaLEEShoSJuVEip2nFngAcxrlcK1KEIjySdeJbYNjCsBzSX1GGd0HbxVpBHG0yLqWET7dk9vfl6O/J4GpLn0f6AWxByCgl6is5mtctnhQdf00UVBjCij7FUi7+OKLc2lSrolh+Mtf/pKksUQvEH9IHTYK4ysgH8+i7klEF1GbivHkpWHpnfycsphttyy8BSFb2a+fl4v8QTNXWRGbvxIwHOuNX1nGBKG5wBsv6yZG5noB4VX6sGHDkrRyXkBMxjQYYZXvI6mE2KjOdMO0C3LmY/JXBfArhVovINJFaZp7iyGmOccCTWNgPi/lYm4Ky83nK4tNNtkkel3oXeG85UpXYIrvzxj9ng4BxVA7uhj604gJF4qolglygoCUFaMPAvGCQJAm+Zgj2rTJnJeu78mwqLKi3gSAckQ5P3fipyANk1I/FlNQ9VGuSKPz33777STNbwzh7VdZkenE31cxMoRramBaUrpC0HjTfHmIJREbEbQJlmkDBZuyWCzKlyDwdus+tQmW9vBPkKazGwB7MmgHXUHT4lZbbZV3P5DfoTaJcKJcVBAMuRtKEzNF8GFlIhG/AkKTzvf8+OOPsyXj0BvvlRuCX9Pt8MMEhWv5qCfc0iqr8xE8vI5RingWmfMBDh+l68AP4gR9+VLUb/fKoidClUY5ZbFSl72PcWAEJg1BYCQBOUHQcqQfegmIJA1p01IpNr3yRZwWyo+dKuKpM5RQ/FQHbV9AkeGafhMspqDuT2QUUn1pzsWWoRU1hX2tOoos4i2iXrp9LUPzbwnCQw89lMtHMaQd1g+UJvJGSpfhASqdN5o6CI+WoT3VpieeUtphPkcXS+eXCxXQyBQzH8njXrJtZQRBAQrefPznP/+ZpCGpCp7Q8OOJ9l8q31OCwHSALU0dhjdB9+Gln38rXcTU0zVlfRS7DwkCpl46v9gmWAWm0Jn8DXyQiDbBMj0qTWRo17lM2PlKZ+SiDtFZ+CR8HcgUp/sT/e9I50HOOki346lps5gfwbWVryyiRKkQvnPA8KG0laXaxEmjNPYKNhXMs77dUpQg4HhK5xXbBKuDPHDKxMBbT35s6x5eSwkCppmAXkNasTMXSm3WLcYVcTEXmb7zBYF1A4ZViD6Ave+HWRZZlB+jvHgMO9jDpCkQFGLv0ibzlN7k2BlKfhOswtHxnDH3k+aDQmP0wasSBIZA5csfwn1qE6wPXmVkpBwauO7Dk+mKfC2Re6ADSBDwkagOAp9u0y/S4RPQ/YmMPPodIgqm8hUQi0KsUZRnqPYlXF4QiKOkLsvmCGW23XxB8OChZwvlSHRuKeC4oJx/0xi+0u14xgTBv72KemIPgoQHXaQUfDi7BMEj5mYlQCMNfPjpcjCmgAoIQixgRG+vt/k58a0UeGC+DegXxxQij07DVABiCr33/noUHKaVTc+DLuKJ5lwKHJxFOW5M+//wZqXb8YwJgnfdyuZnXo1tcInB75XQiOIhH76n35onMDIxh6bLyusaA4KgeE1PhaEjRErjQZcC3kbfBvRnKGm0JWILPwtgZEnX8QE0AiNIwZY3CqaJIkUh5kPi66EPKhUYilQHBwnlsHUloU0RBH4k7RB7oGvy9pLGcK6Hgkmra8biIPF6qr4Wi7DTVYczBJQvMrwqX8Ts0ijEiqfKYt+THzvmD6WSUci3DRkJAFMcJ7yRhldV12JxLw3C9CiHk0kWnRcErCTyGW1YEqcdph5dU+SALV1HZA1Gi1/GjCAYlFBAQs9LwW9P46GnUe7UEC8IG2+8cZLG+UtCOZuf3diVwNv86ABpcCiFbzdNHx1Mn5CGVr4y8MO44j+KAcWVcjHPIqax2vExjwICo/wizBcEhjTmE6jIHaKFYmB4ZDRgO7fqMDeT5olClW4TJY1OJI1oIh4SUk9QJ2n4EfgbemWTUYF8ae0Qf73KliImp+4DRSqdz5Y25cfC2RmlVNZbDUrT2osH06Pyvb9E4MXRNTmGIA3OTaIPqa9jBrwLGTOc/DfffDP3dqMECixdk892PP0O9AJdU7RnkS8IfqjTylcxQSCwk3wfOyAdwdMrN7g7SfObYHG9MuTT+XI34zzhb6i4Bxw/OpKGrV5ac0fzVdlS5PcIvDXpfB8Qy0NX+yL3obIE1pDG/5UWW8hiSFY+7u+mAmWS/qJ//Elygn9JRC8IfrVYjFk6BS5mvyMYSSHNL5J4aM7y4Vq4ftWW6E80pSxpPiiU9Qt84PgWFI6OIsPfkLcKX4Z/o/BMkgbJV9lS1BwNWHWbMWtWmGX/n2XKHVzonFj8e7bpFuIs40zjDCsH+fcsG45nWv2pdl+0H4tQwqeg6ytwpCmQIEB/7J4QU+j96mNstbekIDC8QgWjAJw2pBU7w4h08lF4WCSCBISQhn3LW8CFvYavNv0cjTLDEvOqxmJ7cDPGjg2zTAGGM81CmGoaPZxt6XPHjwvzspxvD2FBlguzXGRlltoDbg7QB+pDT0ZL+gslXMf6YgUpHx2DfE/qKF86F9OB8pmKlS927tw5IwjJFVYQKDk0Af0ytEYMv0D0dYM39OPnnw/3mObdxeb5S22477Juu3C1DfE3GG9p1zb8zvgHS/9z23XCX40PGh81C+rxddqEp4zP2VT0jzatw8ut1w5vWJ33TdcZbJ2/OPugVgTeo+tZLpIq5ln02/dFP2rHTFJj0wTB+9tF4vaYw6BGD4Zh2dLoCOk6aa4K/Nusl0t33TWcyD0Zz2/RIly0xhrhsjW+GbqYonWN8YZvrh5uMd5hv+UPq7cMfzb+1fhgy5bh0ZYtwhPGZ6xetxarhReNr672jfCatQU/3XOPsCBiXlcCLCuZqZ5ypnmw31L9HVtr4K1XfRa/KEfgroAOofqOTRMErIL0ChdbrLQaJmXOC4LfBBsjS84xRai5sMDm89+feUY4yu4FITjH3uTzjb+yqesSY+e1W4UrW7UK1xlvarVWuM1411prhbvXWjPca7zf+LBZOX9bc43wd+OzJjzPm/C8ZHzN2N0E6B0Tnjet7ZofF3onKwHDvjbBesYEAYeV+ju2+oiPRfVxYlHO6xfoVKrv2DRBYD7RRUSUyhics6Is9X2D5sY867QuplAdYtc42R706a1bf2WC0MNGi3/adaZ+8EH26k0D6wHpfokJgkfMavBUsEs55JTF7N9JxIo2TspF7MEumdTmyWQhSXVEnDOMFOSz8KIb48em6+Phwl5ubmBZXHfccaGDXfcYG8J/Zv8/yXiq8UzjucYLjBcbLzP+1nit8UbjbcY7jX803mO83/iw8W/Gp4zPGF8w5gmCEUEY7A7NrhS8sSxPq59ECQJWFI4z+havpBA7Q4mNMupbndTGCJ1+RoQZyNIpEASvtGDSVQKcHaojso6uTSR+yVih5x6YMz78qrnQz97M03fcMVy8z97hsg77hCtMYbrKeJ3xRuMtxtuNd1n+3Sag9xrv27t9eND4qI1yT7TfKzxlfNb4vCmEL+61Z3jV2H3PPcPbVub1TTcJr9gc7AXhX/Ybq5uwKVhAyfb9J0oQMHfl8mcUEGKCEItZLBZJpZ3mBYLgH1o5l6dAsInqeMonwKGRSiNcPg0ifyodwpqCRSaIOjuE5ZjmJJjw0UfhZVO0upswSBDes9/Ye5utw9KIT6EUfECQp7caZI77fSKsO6TrsMkoDdZj0uVggSBg60O/9IwnjjQfZYxHT2W1AIVrFVepJ9YDXkbVVzoePdUXuWapZd3/rVi69Mvwznbbhtetr/IEYbNNw9ImmpIobL7/RGIY6CO8nozWpHEIiPpOq4co5vQ5+biU02Ca9+1ClgYKwtkNOQFIE1eqoMBHqPmnGBS3R3ygoPjCNL8qZfGrBPP2W1tumScITA19Tftf5ryUKwPvWdQeT1zVvu8g1sLKoKQgMCdhinhnhA9n1ybYGHnDZcYQRKL02G5opFnnAzcFXy5blvDrwEIzk2vMHn/J7r+7TQ8ShB72d/8TSn94LAb0KT1ofAHqL20AJt6A0/BJi+kTjAy8TKon0lYajALpcsbigoDmj3/fu3+9IGgxKEZ288hBwl4EpcdMSkYZ6RPFYBIbepuieZ8NixefdWY40QTq2H33Dcd16BBOOeCAcMZBB4azbLQ513i+8YIDDwgXGS+1vMuNXQ7YP1y1//7hWuON+3cMtxhv79gx3GW823iP8T7jgx1/EB41Pm7T1VM/2C88Y+xmfHG//cIr++0bXje+beVe+8424Xm799fs4eeUxdVbhnctbZxZVk0Fw7TC1tggrP7Cb8MzYBpm8Y80v2NdbGHKOX2ueqK3MARC5NPlrG5xQYgpiyzfxsquDH0Ucwxd7Q042Ealja3D17PyGxu3bLFa2Namnu2NO1kn7Gp/f88Er71xX2NHMxcPMuI/ONJ4tPE4Iw6lU4wyH39pvMgo8/Ea4w3GW43efLzP+JBR5uOzxrQf4W1L67Xbbk1WFAFKIdYXIKhFfYM+AHiz/VaDShl7hgonTDEjCMTPp0nIE3sZPbVLBvLvWD3IWQCKqfdEAU2XJeAjtlY/deqUcKJpyGtZvfXtYW9tU9W27dqF7du1DTsZd7UR6XvGvYz7tF0n7Gf5BxgPNh66TptwpPHoNm3CccYT27QOv7A36atyKHW3e+xh15lhb/OKAGuKeFD6GJNRfaO1BIZzHV5OLITvvzS9YyqmOCpeEx2O8DzqnHnmmRlByJbJQyx41TMWiOGh+EJP9Io0ELj0EIbL9Uc2pK9udTa3h7+lcRvj/zZBYK3BejD02GKLMLXMLq5y0PY3vheVhhcEr3zHwHE/6u9SgtDKfm+B1ZD8lUK57wvoUz4x+LUGz0odSl1MEaP8t+0Bb2oPdnPjVsZtjNvZA97BuLM94N2Mexjb24PuYA+5o/Eg44/sQR9h/Ik96GONJ9jDxsV8mvFse9CdjBfaw77YeLk96N/ag77WeKM96FuNd9rD/qM96HuM9xkfsrf+MRv+nzR2tfvCs8j08Kq1W9OpU5g/vvRLUQmII+Q3xw4n84LgYxZj8N90igmCIqNLboLVnAQkCGik2kCJ7UoalCDwEFUf1yUoJgisS6isSBSNdzETxLmuPcy29jA2tIe5sT3ITYybG7c0bmOdv51xB3uoOxt3N+5hD7a9/bB9jfsbD7KHe4jxCHu4PzEeaw/3BGvvZOPp9mDPNnayh3uh8VJ7uJ1N87/KeJ0pfDcZb7dh866WLcLdxnuND9jU9IjpIY8bu5ly9a4pkP1vvTXMjAScrggI35fnsCmCoE2wBP/IQogJAmFw6m+F2ZXcBIvLUtBuH3/WoD+NQ4LAw1eaXKLFBCFG5irvR+DfPW3kqLYfUW3KjljjWJtlnbE+y4Ys+xsHZNloHJjlIONg4xDjZ8ahxmHG4VV9w+d9+4YvjCOMI42jjKONY7IcB21am2j3NGcFl5pLwbv2myIIekboY3Lpe0HQZl3/2QMxKggseEAfZ4+UkcaOW7aBQ78xRIKAH1v1Y2cxI+nKZ15SfRFzqJy+8X8dmOra8t8UQWB/Bv2KQMgP4QWBdnluOKH0DHSQWVQQ8JJBb8/zb9KIhOWthS1siKQRKEGwRpJykH8DLwgIlPJjMXb/FYRMHyrQtCmCoGcEBS8Iem60qXJ894K8qCAkfxUBkcUUSbOcNzAWqsYNpdv5fysIKa8oeznoD97uNLwg+KjwGDiMxPcv9MIlQYC0C3KCoE2TsZDrYsfrMY2oXpoEscaCV7lJ6nVyhz42tyDU9uwZrjjuuHCrCeDtxjuMRCjdbffxZ+NfjPcbHzI+Ynz8jNPDkzZqdTU+a3ze+KLxldNPC68b3zS+Y53/z9NODe8ZPzDz7WNjT2NvY19j9amnhFpjg3GAceApp4TBxs+Mw4zDjV8YR8Ljjw9j7H4Wp14knf5G2L76kaBW4AXBb6yNkdVJ9a1I8KryCV7lGUB9acaYryxyIGYa/kTTFaEXBAEHkvLRG5pTECaZMndIu7ZhL2v7YOOhxh8bjzESnHKykZjFs4znGX9lvMTY2XiV8TrjzcbfGX9v/JPxL8YHjY8anzQ+bexmfNH4ivENI55F1hr+bfzA+LGxl7GvsZ+xNssBxpndln/SWIgdA6hNxwiCdlivLP33K527Ol8Q8DKlgbKh/BVhTBBYdlU+SlJsT+XK4OO33gwH2NyIi3lVeBa16PS+8SPjJ2aK9jIztK+x2li72jdCjd3LYLPA5vbpnb3LfMQEgbUGgCCsiIs5RkLjAfpCwSZYQ5LgBYE9hzg5fFAlWqo2VursYHwDSvMuaNELAsuqtEkYFSYNdQhKkcbbnPj0zTfDyVtvE35o98Baw8/t4Z5uD36VCULLFqGPXRdWG0eefVZYXCJIV4KAZ1H9qaBelEJtrGUoV9+iGJLGMcha0EOHUH09OzbzKo0poewmWL8rSceueBIqLbAGTprf8kb8YrqO324uu5d5cFVgxrRp4Zk77ggX77VnOMkeOlNDeuFJcYuXGxW3eJORuMW7jHcb7zU+YHzE+ISRqeE5I3GLmhreMhKzqKnhE2O/9dcPw04+OcyKRGaloY21WA+lgGNPfftBNlAWH4LWdvymYp2YwnKBwAEmqu+YEQTeakghvFEQySINCc0WTh608tmVSz6+b6XhZ1BbYuzb0AiC6rDO8FWMCB5LTUMfaWbwpy+/HN59+OHwnimt7xs/NH5s/MTY09j70UdCX2O/Rx4JNcZaY72xv7HROMg4xPjZIw+HYcbPjV9YeyONo4xjjGMfeiiMs7amv/deWFhhwA0RRNoA7EdlbYL1ZC1BfUuIG2l+E6x/HhIuRgalseyv+mJuE2z2ukkIE39CSVsxHUEbVv22+Nh2cw8Jgic/oLl1hP800G+xb134CCXRK/Qr8llC6QgeBX4EYhJVQaeeF7MaNH/5z+LGNlh6FLvx2AbPVY1RpqtMMSW2HJYuWRImV9eEuVlnTHOAeEPm7zSIVUz3FSOHEHuxytFbDUJOELQZEiVOFcod088WeupwsJQ2WMq3Tbw8c5XaFbXgwRK16iCh7N75ujB35szw4FFHJebj9aY4fnT38oW3NGaPGRPe6NAhWYF8ad11w4iuXbM5KwdGYjyG9JF/Y3kZ1U8iG4zVn7FNsJ46Iym2CZawdzzAICcIhryHDHUSSTHPouj31QnFDqES/SmpXze633pLON/u6VqzBvAhEKE0LnIAF/jw3HMSX8LzZhISqvb6OuuE+c3gA/HffvLfo47Bf6JAL2sxKEil2CZYjcQ5QYhsikz2K7C06T9aHSMBqZSDWqsotvqI35u2/ZdgqaN/fx14+PifJVZDYj6uvVZiNdQVedNf2W3X8HfLT8xHEwaCVydFYiyaCgRBfYOmr/70FPzeE6bydDk9A4BrmTZjm2DZk4oySh1T1jOC4DZD5sihGZiIzukQJYsX2oAZW330ZAikbf8lWL59WCrI5avGa9ddl8QuEphyfYvVwvX27zGR+Rr82zTyxyyfEeEf9v/XbCppDl2BEDWEgb7BJ6D+FNH6tVTvBYHzD9Jl/VlPvPG0GdsEy5TPiEGdkl+CLRehFKP/oGUsVM1/dEJgToxF264qzJoyJdxz0EFJAOvV9lb+6+biwbQzhg8Pr+yyS+JHeKHVWmGYmYvNAULUtQvMnzfhqWhy/+HxGHEBVAotfRvzBYFlSW2SjLk8mb+0wVJ+auLulYYyQl328OvgLE+dxYxyqOvgwYwdLbcqgbt1qA3x4xozym4pLJ43L4z7+OMws8wGn6YAQfDKufpTZCGJkYD+Ivgnnc/0rBABf4YSkdHU8UcQElZAGgeKo6Bm28gXhGInd4j+aytyXxJjIMTMHU8JgrdEmBu/TqvhfwOYUsudq6yAEs54TINNKnq7vSB4h5LA3kj1vb4Ol1MWk78MXnuN0X/ASrqDV0TwiqXreOqbBfgglMZGGA6sJkwutj0e4SSPk840PLKlG3c1RMIBJitrHZTFvlY+vgvSPHkj0uCNVJ3YIZ4s0as+c2wa+P2py4vBg6kEKHu0RyyCDiwvBo3AxB2mwWZWCYL/wp3iP/wz8i5mncuUEwTcyRD3I8Lg6b+8zqHbKstxcuQzxyuNZdN0fU9c0JTjx6tNTx2Xi/KoNrUOD+XEYkRhiIRs2KCcX4fngSjfLbXmGPOu4ThTHW3K5XoE1tA+Zyqqfsz5g2eQuuzuVsBHORC3oTYVyc3hmPrtIveA/kUfxj5+wgskQeA+VU8KO/9XGn4I2kFx56T2bHpGEAxJBd66NIgVUL6nIpTwXyuNxkuBB+TbSFMOKd7OdB46R+z0tdhXTHC0CAoT98RfXwno4HRd2FznOfiVRB0NwIP21xJLrcfgoo/ViVFL26BAWUThg506dcptjNSFcSgp3xMBoFxTvgQrlyh6gW9LlBnp1y9EgmC5F9rUkAYYKtNlmSd1feky2M66DlvMyCNARnY35yCqjog1Q710+xIEbPB0nWJtxh5kTBBYntd9YpqT16pVq+QDKv46nrxAmJKqV4o6GJQVS5anSVtvvfUygsDNQ4YfbYzUIggatfI9WaamXFO+BCtBIESeH+Dbg1wLxAQBXUInnhIXIcQEgQ7U9RE60pgndR28a+ThetV0409zFWOWD5QgMK+n62y22Wa50ZIoYqXHTqCJCQLCpfvUKfL+t8fIA+WaqleKCnvHiYe/J5ueryz61cdyygu7cymHv0HwG2BEH3Wrw5/8EbwxxATB03/zSWvu5ejjJtTBCIzeVEzedJ1ilCD4zwl4yoHjz0BGwU3DC0LssBB93Ksc+cLdyqDAasDDpcZRHLX5NUZ92xATRWncOJaDJ4sbykdyqcNag9zKdKryZc6UEwQUHAHfRfqaMb0A/USQCYUgoOBxbR5Kuh1PH6gjQfDnR6GhUw4h02IOziHVZ3MQ10HgNHV4QUBxVD+IsfD/GInviB3xi6+AdohXEHjB09cxFheEFSH10+jWrVtBORxTEgQv9bIamiIIMaAQpevEBMET07MU/ImmMUHwp87GoIfKdKNRyAvCypApLiYIvHDk+xEYPTBd39i8ghDrDD/diIwmEgTOCVK6PrvTlKkhhtiHsvGrC5dccklBPiZtKfgvo0gQvIbPl/ZLQR/3IghV8Kb5yhCFLyYI8iP43+53qzkWFwR8Atr8KnodAEdPOp91bpQ3zliUqecFAc8k5fzpatjNqi9rICYI7JN44YUXknK88VwHomUDTCh9YVVvAkRLpg7BH6qjdXq0cU59I18P1wPTGb2GOtq2DlWWqUz3zlSq9kX/sXN8D5TDVaz75CVQ/VJkfSG2iKeT7ekvTTd8GkDXl7LbZEHwBz7HnCYIh/JjB3L6T8nJbPTH68U8djHEBAGtWUMqR80onY4ArGj68qK8gLGNoHRUKRSLxYitjcSmG69ICxzZr3xenEoh4fWMHVeIzpQu5wNi/U4nx4wgaJMrXjFtlkSpUbqIBCqfmMZ0vr4Ei81Px5Pmb0xrDTxQ1cF8SSMmCDw0OhFgluk+8NPTDvcjU5HzhJSvh0anpdvE64hCp3sR5RnEdctIQDsMv6qH8pWug+9C1xRjK4Es7GFxkY9+lG4nRmJCdOS+J46xdFk/1WLKch1GIOUjfKSx/Ox8JBlBoAMhi0bY8hCbX+ki+/GVj6Mmne9PGFdaC7dxVoKAO5ebID92hlI5QUC/0H2weqZrqSyWivKli8QEAaqup9/6p3aY1krVQZlUWdEHiXgoH2Ux1laM/p5F+jZdzvc3J9RwHf6vfKZV0hixEZRs2YwgGJIE76iRouHZpUuXbG483qAc5ZsgyEJpsY9RxQQBxjbe6qswnt7FLBQThBhxLqWBNzJWVox9W6EcYsN4c1KR5owESvMxI0W3vBHjjpTCa6+9NrdZUtQbDSiTzo/RnyCuL8HeeeeduXzN8R5eEPhwOOX45mRsuRqllXza1oiEhq7fIc9hOUFgsUb3JFc3/gAeFu2UOwk9FsHNtKT7QCkGKNFYNaQx1eqaMcofQsg/oe3pfMxw8hktO3fuXJDPKMZ1vF6AdaR7YuSknL3g+YLgWaliVw7M5+m2+VJqKeDeVlk+alEJ6GCGPn8dKA2/mBdQjO3RLBe46xkTBG8xaZTxHwD1I2wMPCjK8ebG1irw2pLPfB+Dt3RiLDid3VBQqFyEbKVgyTPdtvcsxuAFIfb1tBhQ7GKCoLe72MHUov+wmeCH1HKMCYK3mFicA7iftSsJZbEUZOphOmtk89ByPtsEYtCZCzHiVdVUmxMETEXIh6FUsJwgsOOGoasciRdQ+9I7vCBwZoLKavjEn6A6UhCZFhjyKYdmLNA+af6rrZ64wMnHolGbMcaCTXDSsAJJfswJ5RkTBCwitY8izn2whVD3iSVAWjFqBzQKILEgpDGUCxIElpN56On6+BR0fZEzMNNtGjOCkG23STa/N6dKkQsLih1AWxX8d5x5A4uB+VrLsrHPEpajd6qsCIjOirUrlvMs4uCJ1WsqaUfALIyVEWP9WUSg8wXBexbRgrGxPXXmDmCXM53rGdvD7+de7GrKET6GBUGb3hGDIJIWC29HB5Cl4tca+GHp+/DEe0gdv9bAPM118HXE5t4YWEmMtS/iLlY/iRrhAFvV9DtFDr9QfZ0wgz7g200Ty07t48AjDYdRbDTknilHLIOAoppu01hcEGL0Q3IMWt71jClhXmGKkaXlNIoJQjnoU0JeEOQBZUj1R/utDGKf0fMLWTFB8DqC5vPYb/dguFd9rSriCnfRRgUst9U+pyNk/867SIzltFwfGCnGFoh8FHOM6AJpMDVI6mOf+C8GBdnS0YLMKXb74FxpDrDUrPsX/ddW0KnS+b4/NcWhR5UCJrzqK3gIT2js7GsRT2Yp5AQBtyPES6fKIsM9tjTUCeIemFiqr7MUmMv1VVh0AOXrQ9goUQxRalfUOUE8PNXhHEeA4sZ0lW4z5vf3YHikjv9irUYJ3iLsc6WXol/Tpz3S/M7ichtWcetyTSKKsOHJ919txaQm3wsC33VUvuiDdBlxSMOHErOYcNZxHfw26XYq3gQrlpMmHELpOrxpAiuGSvedGYPOGvSMaeN+21e5NgW0f99uU8koIsg1W65v/IZVEYEQeEjpfEYGITbKNIXSUdARYvnaPpATBOzaYsQsKwUWe9J1mMuZe1HE/BdHvGcyBkUwebIQRjueOGp0LdYF0vmx4d57Fnl7/P2m6f31Imab2sfkotwBBxyQd900UX7TbWLzkwcYGdQ+ay+U69ixY5IHeKNVX9Mi7SgtRj8yEGAM+H+6HAuDBbuhR44cGYrRWwox4J1K12G1jOGXH+3XJFZEEFiHpx1Pomx0LfSFdL7fiCN4QWAtwt9vmgcffHDePUCWwdU+PhbKMRr566bJG602tZeU9JggINCU86fHEOBLGlaUVh9xdavNGDmXQm1KEAhYTZdjNNALU6AsNhcQDt2MZ2xzhodOaitHH00U26zLukQauJqVr29YF0Ps0EpPvRw8oFi+6E83kf7FEnlMEEq9cPagctNRuegsH1JXTn8ScoLAFrDmoLa74wXEk5fdYJkj6+exeiJmYbpOjHSgEHPU0Fnptv18LLc1oeMoeeT7b0+WW2BCaaVOLCSOoRmrh/vEx6Hro5SSxijBdYEXBHQhlRV5cwFWQewsZjyFlGN61pK3P4uZHV3kx5yDlNfXZW00Kq8sNoXM56VQ7HN/YinPYjGsiMdOgoBvolXW4eRHmXKCUIo4hLRKitav9HLh7DEivKCYICggFktEMYteEES/CVZg1FYom7F5BcGvdcdQbsub94BVipijphy9IKA4kcbDF1ZGECCdDJj3lSab38PvfYzR96f8IV4QpMug+JUShGL7SLDusmXyBQEtWBtWKyVxC6ofEwSUNIZ8SHRMur6WUiFKZiXAn6E2tb8COxxrIt1+LNZPgsBcTUge5bhPQYKADwU/RLrNUqQ8X8Hl3uhPXZMzDEhjRVFKGoKveiiRKitiSlKHPakaubwgIFzUZeSJTQ0IGvkM/wJ9RJt4fHle5Hft2jVfEHyEUqXwQaExQfDmo+9swQfEVqrcxM5xoCNjiB34UW7k0ijjv17TFMScOyIPNAZ8/rHyaaJ7lQIbdlQ29rVeH2Dstr/lCwKKjDB79uy8jZZpSqpROFRfHYyWi/eQcugNyo+ZjyzWsJIJ9XVZhmyB+ZY02qNdgJNKdURs+5j/gKVWXV9EydPviFF7NAn4kGJXDszj1FVwavr+RO6HOID0NWP3GSO6TLquJ95MlZX56DfrEmTLfTCScrZENr24IHAyh99omaakLSYIPEg8aJRzcXFRQWA+5SFD4g+pw+qkwFBKGtu6FELPfKg6ohcej1gHs9Kn3xGj9IamCAIOJ+qi1OFKT9+fyM5lppz0NUuNIp7cW7qup6YQKEHAulA+Uwf3wUIV4XmkFXwJ1gtCOQ1fJ5XEBAEfNgqMLw9jU4OHtrD7Das6hpYfGHvjyyGmI1RKnFmVggPNVS8WTSTgzfPX+CopQfBb8/QNCHQKrW8YiwtCuVPVFDNQTBC0M4d5lnYh0shSt48SxtFDGvQ+fKUpmAVBwFlCWswxxVSGokY+b4DA0jnXjgVx8HbhcyDfH7jBbyeNWAl0HN2LyHCaBkoYdfwm2BjwDWjEYZGOOpDhmjQ8sUoTUe4UryCPJSwn5BIEoq9UR2YsI3HRcHYKCs0lCJ06dUrSgMxHhkbN934TbKWMHSjFVKV8ppM0/DeXRUYteflwFytdIxcP3JcXvaA1Fbh2JQj+5HrttvZrDR56aP5LsERq6Z5i1HbAGFAUV6kg+MAUKWE+ZhF3sOpXSuL/0vARx4R2p0Gkjm8DspCjwBTMKKXrhDO//8Iztk+yUhCDKUHw8Yfar4mVEwOuafJ9sEu5UDUdRVQM7jDVr18Q8CaiRELZ0ih4ShMJi9cRc2i8tAU1/M2fPz95gJTVxg7AUE05hCfdJvcuRwwPXelMCdTBZmeZnTRvdkkQ8APoPmL0p6Ai8KQxKmol0QsCcRdch+kt3Q4PnOmUfFzRSidOkjSEWNvXCIAhDdL3lPNb76hDGs/XBbMUF4RKvYAxQWCXsOY0v0jCDZBWLJxdb4X/4ohHLCayXDyCHE7Mx5WCTTXU4XqCX6vQSbHFdmSJ3lsZ++h6bJdXsYUsWUU+ikwjF8N87Asu6k8W84QiZ2EWFwR9CbYYFfQQEwQUN+Y8yhENI5QTBBZlqBM73Y2O8EvaonZKMdczuqSJ5NOmd8QwPJOHEiVLhBB61cELSNvefMQbqd8ui8lr49wbedSRKehD6tCVVF+UBg9YsOPaCHa6HMvzmsJwWyudkYA66DSabvBq6neoP/10greRNO6zYBOsIUnwgoB5QScVox5kTBCAysn1CcoJQqyOUE4Q+OGEnvEQPBnG021ikpLHvKtNHuyqVh0N3V4QfH/o3r0g4NEjj/tUyJ0XhFh/+nvixeHaBK+my0GBaysNpVn3rPvg3pVGpHi6vu4DR11RZZG5sanwIWBeEGLQF1xwZDQV6B16QJ4SBG81eLIDKg1GHOXLaogF7qKTlHIo+R1ZeCsBZpneTr+iWQ6KxSj3vQaPcmcsxTbteOCky5bNFwSkkuGqKfQh7DFBYCFJZTVn8Wb7NkpRihnzIMGeBF36FUcJAqYepij5nkQj0Q7DqIDipXwCO8lnyPT1IOl6a3F/6540iuATUFmt+aN8oiSSxnytOiIud7XJG6t0Fu+o42M00QF83TRRQKmjEU59IhIPEasHcUV/ZcvQsY97IRyxspXSRwoLnBamfLTjUtCbVkxZ1NvLcT+lwDkOuqaUxXKIBa/iu9BQ7ZehY28v872vm6aURSymUuHsFfAVY4JYZpMZO0yL3cyxspUyJlx+a165PZoKXWdJOA2GcblZ/da8GPzBV5XGTTDyqI7oNXgf4RRbgi9y3lGO2lhLnGOpDS4V8HVjgj2N2xm3WBma8rKFKTN5NPMxWrZSxto0EyiXb8NwQb6nbyudN3bs2JL5nqa558p169YtWiZNG7Lz2hftDU7y27dvn0uLtenrxNi5c+ekXFVVVTS/CVzHmIE1eLTxyv/y/yWvNd4qQSj95YivCjU235bRbv+LVQMJwsvZv1cZ5owZE3quuXao/X77itf9vzoU+jX+v+FrE4QvTXse/cijYeKrr1X8GNLlljXhAVZatiltNhf4RtSknj3DvMiBYaXAN6amVlWFqXX1YemSpsdreOQEYZHdzPCbbw4j77wrjLzjzhw/v+GmMHvQ4DBn5Kgw/MZbwqjf3RFGwjsoB/nbyl13Q5jWq3dYYDb9iNtuD8Mv7xwGn9cpDDnv/DDi2uvDpO5vBe8zXDBxUhh571/DqMefCIuz8XNg0axZYcyTT4Vhl14WhlxwQRhx481hco/3zP7O/NBpZn8PueDCMNbFNVQCHu+op58OQ6+6Jsyw3yMsXfZlGHn/A2HolVeH0S+8+LUIwsDTzgw9v9EijOq63N9RCWYPGhj6brhJ6LfbHmGh9dvKICcIi83urWqxRqhbb6NQ3Xb9UL3OesZ1Qy8zMSa98lqY8vEnyc32a71OqG7TLtSvv1FoMNZYmerW7ZJyo+79S5gxYECoWrNNaNh409Cw516hfo/2oXq9DUPN2uuEweecF5aYFINZtQ2h31ptQvUOu4b5c2YnaXNMX2g48OBQ3XKtULPBRqF2sy1DH7tmzX77m/2dmT6GX9El9LZrTYnsFSgFhLD+qGOsvW+E8a+9kUk0jDJh7PeN1UPVpluEGSsRa1AJ5k2YEEY/+FAYYwLnMeysc0Lt6muGsc9WdniYMHfwoNBg991/r33CotmZPlxR5ARhybvvhtpW9rBOODnMbugf5tTWJZzVr19YNH1GWGwSN6NXnzCrql+Y/sGHofH7e4W6Lb8Txr/wspWpDjN69kre8un2xtau963QeORRYeGiRWHJosVJBw/s8INQ/c1WYfw/Mp0wu39jqLMfUd+hY1gwL7MpZEin861D1grDfnVxMgrNGzsuTO3xrzDJCHhXBx5yRGgwwViyJOMerhQIQuPJpyYCOfGtzKGa0z7tGWo32tS4WZj6QeF3KeNIjxjlRxCVGPP0M8kLM+Sy/LMmhp59bqhZo1UY+1y3bEplmDtkSKjffKvQ0L5D8wpCjT2oz85f/tWVYsBNOmDv/UL15luHWdmtWcK0Tz8NNeuaIPwk39f+RZcrQ7W93SP/knGjzh6AIGyZCMLChQvCEhv66zvsF+pslJk9OB7aPnf48NDHRqOxjy53Zy80IZ1s084Ee5um23xZ7LEkQmSCUG2CMPnDj2x+nRsa9t431K7ZOox59LFMoSysP5LRafIb3ZN2p5ggMh8rb0qfvmHiv94Lc8eNs3YzV+S/0+wFmtijR5gzenRYPHdemGgvzJSq6vCl1UEPGHrlNaG+zbph0JnnhcmWNzP7O4eefV6eICyYPi1MfP+DMKW6Otc+WGr/nvbRJ2HCc8+HWXV1Ye6w4aHBXsZEELKHmk+z9AnvvR/mTZmS1ORrtRP+2SMsmDo1LFm8KIx76cUwy/pxeasZ5AvCGmuHIeeenxTyTIPRYUD7fUONCYKfb8E0U3oygnCs3XjmTZxhykz/3fdMys/OeuYygpAdEebPs+ssC41H/zTUr902fNbpwjB/3PKdwcKE7t1D/+NPCkuy28omv/1OqN1x19B33Q1C1cabhL42TQ359cVhiQlWGvwOBKHWBGnihx+Gz22KqV2rdRhuDyeN0U91Db1btw1VJpSQKYwpa85nmejtQRddknmz7VrCwpkzQs3u3w+9rey06prk9/VtZVPffh2TPhjQ6Zehn71og3fYJTRstlX41Oo3mgCAtCBMNSHpY2Vr7JpLsqudCyZNDgNP/EWosfvva3l97L4Gn/DzMHD7nROBXpTtkwFH/sTubfUwLjvqjX/mGbtWi/D5H+4OQ049PXxi1x31ROG3NXKCsNgEoc7m8kZ7YAPtIfJGN1qj/e3/80blv/X5gpBZnxcQhLpvbx4G7LRbaDzix2HADw8N9ZttHep33CVR9AQ/IiyYm5HmKfYW1G6xTagzgWzYeXd7SFeHmVn3K4LyZXa1EDB1VNuQPsCmiZn2Fsw3yf/CHm6/b7QMY+4rPGBDgtDAvZ16RhiwyRahwYRowdTCYNRpfavC6AceDPM+/zwssOlp1G2/CzU2hw+2uRzMtAdd961vh4bd97IRKXOw+BR7eLUmiIN+dHhyrZk2Xdavv6H9/h+FxTba8TIMvfg3ob7d+mHQKaeb3vVqmG7tgKGmO3lBmG76WH07e5kO+3EyCtDeYFO6a0yHG2hT7uS33w2TXnolNJj+1bjRJqFhn/1ygjDk2J+FWtPjJr6b0aGmvPxqqP/WJkn/1++0ezLiY2mkkRMERoS6DTYOjVZhwF4dQv899w4DvmfK3p77JEOyR0WCsPP3wqBjjw8Djzo6uYmGLbYOwy6/PCzKRvnmCYL7ctsM6xw6qm6TLUNNyzXsGluFsX8rXHP4/OprQr+Wa4YJZn7yxjH8zh7+eai3NgceeriZp/m+CTqz8RenmQBsbsJgQrDdDtZBG4cRd6bPU8i8gWDehImmF/UOYx57LHmL+9sQvGT+/KTEwKOPCzWt2oaJr3dPyo645Vab+lqG0X+6J/l7hk0fdabw9j/4kLB4ceZexnV7PlSv9s0w9PrlkURg6Dn5OgKCULeuCdHhRyXXmmPTCn3VsO0OYY4Jp8CUxVSaGREyU9fg4463UcPuKysIk61/UOz7f2f7MKM+85UcsPxXZpAnCDVr2tRgUr8UJW/BQqPN3cZlLogCVDQ1HH1s8oC44FwbUQbZ39U2ZGFmgrypwQmCMNOsj2GXXBr6m3lUs/FmYTpeyCxoc9BPfxYaeat32T2ZHmCdCVxd2/VCvx12DvNn55tTycM7+bTQsM76YeiFF4Wpn9hbZ8JZi7VgSrHH3C9GhME2jPaza1fZNWpNaBq3Yi7eJzGPwbgn/x762Rs63N5yfmfjYUeGOrOU5mTPisoThKzDbMzjT5pFtGZiqnqUEgQw1Yb52lbtkt/sMc90BH5DoiMUEYRJJgi1Nt0Osim1FPIFwW7mM9MRyqHciJAIgplqXnwmv/ZaqDOrZMDBhyV/z7F6pQRBGGIPD0ti7P3LD7VMBMEEq8GGxRGmhI75/R/D6DvuCqPvNN71hzD6kcfMWsn/vE1GEExZtHuYlF21/Pz6G0OtmaroJji4wNL5C8KAI44KNaY/jLjltjBn2LAwk3v97o6h/x57mSKXmQrmT54c6m2+b7RhGeWxzkzdwSecmFwHRAXhb09kBOHqa5O/hXKCMOXNt5KH2XjMsbn2wVy7t5zVkJ0aooJgv3mgjbK+bhr5goDV8MvyVgOC0FhqRGi3QRh4TP4Hs3A61ZmGPjAr1XNMaay34d8LQtopwo2jEDE/j3+6ayYxi2G/uTxUt1gzjOv6bDalNJK3VubjO5mAloUzZoR6LAdT8MY8lPlC7MwB/RMfBrqHOg4roM46nOlywYzlHxsZfvkVoc7MTzoZ4R/vHEIzTRDqs4KwKCsIYx9/wqY7E4RL8wNXy00Ns8xMrN1081C/zXbJSCmMf+450yU2CP3zdIQigmC/Xb/HnneY2P3NMOmtd3JpywXhnXdCnZk2A/c/MIy2N2H0TbeE0TfeEkbYMDbxpZeyxTNAEAaa7sC8VTAimPlYa3NS4/4HhWk93gtT7GJfXHt9qLcOw0E14cVMW7P7DwgNG9t8bWbowgXzkzeywUYRNFve/gkPP5r8u87ehDp7APOzAZzCTM5JNl2EdkfcfEuY+m4P4z/DCBsdZpoZl0YiCCedklgK8iOAia++HupsumjY5rth/shRpp1PCrVmkg3YfJsw/smnwnRTYBnd+q/3LROEfcL87IgApvfqlUwtjdzHbnuEBdmzo8HM3n1Cg9VpOOjg3IgwhZfNrJFGsy5G3/X7ML1nJrIp7VCa/vHHob7tBqHx0CMTyyt5Ic4+N9St3ioR0HEPPxZG2ehXa6NUo+kuA+y+Fs/OvEyf2QtYu3abnLCjlNat2SYMPOkXuYc+9ZNPQ7/W64YqU1ynZRXHnCAssoqYJLUm+VWYYybhVfZDMEUGmenjgSDUfH/v0Ms6YNpACULmMlNMEPqa0olW3c8eYr/W7UL1evZmdDwgjHees1kmCH033DRUmWK6cOEis4Nnh/42RNfYNats5Oi7RutQbcpc40+Ptwcb36wx2e65ocMPQpV1bl9706vsWr3tmuNSnjvA3dWfeHLoaRbJWBtqBdIHmdbe16aIhlPOSJTOMQ88FGpNqawyoelrv+OzX18U+psp12fb7cPc8ZnTyEBS17T0ervf4Vcs36cApvfuHfpYR1cf8MNcbCS+hYGmsDJiYn5+9tuMrjDwzLNCT9M3Rj2TGd2mfvRR6GMvZc0hhy83HydOCgN/fkqoMUukyqbKKut7vJQDDjkiVG2/U1iYtX7ow552P+PNtAYTzGroZSN9/Ukn5wRhulk0/Uyf6WfT2czs1/VygrDUhmccIjMaBzo2hukNDWHumMz5SMIye3unmwBMa6gPi02L9sCxMa13rzDF5uEp9oZO/+ADM/UGJc4MD7TvafX1YfrgQbnwLf4/24bBqf/+IEx97/0we/DgnJ6hHyHo70WmzM6o6psIxfQPPwpzR44MX0a9jsvCTNO4p5rSucBsfo+FplhOq6u1vOqcbjHLrj3ZRg75PWaN+CK536XOR7HQhuPGjgeGGhMWP2SDxZbHYtAM+z3Lli3Xllhpnfrxp2GyjQ7zxoy1uzJrZ8SIMKWmJsyfOjX5Gy/hNFNgZ5jiyTAu0Esz+lWZtdAjMZfBTNMTptvDXJr077Iwa/iwMNVGywVmndEW5i2/eebn+ZbfdPut0+03CzlByP79lSL9MP+TMW/0GLMszgg1q60RhnXushK/rTl7ZcXbWqWC8H8Fs21kqd1t91Bj0+aAw47KOZX+k/FfQVgBLLbpr/rAg8Jwm+Pl4//PRgj/A4BuyshmNUPoAAAAAElFTkSuQmCC"/>
+				</a>
+			</div>
+           {%- if section.settings.logo_footer != '' -%}
+              <div class="logo-footer">
+                <a href="{{ section.settings.link_logo | default: "#" }}" target="_blank" rel="noreferrer" rel="noopener">
+                   <img src="{{ section.settings.logo_footer |img_url: "master" }}" max-width="300px" max-height="300px" />
+                </a>
+              </div>  
+           {%- endif -%}
+		</div>                                        
+        
+        {%- if social_icons -%}
+          <ul class="list--inline site-footer__social-icons social-icons site-footer__icon-list">
+            {%- for social in socials -%}
+              {%- assign social_link = social | prepend: 'social_' | append: '_link' | downcase -%}
+              {%- assign icon_link = social | prepend: 'icon-' | downcase -%}
+              {%- if settings[social_link] != blank -%}
+                <li class="social-icons__item">
+                  <a class="social-icons__link" href="{{ settings[social_link] | escape }}" aria-describedby="a11y-external-message">
+                    {%- include icon_link -%}
+                    <span class="icon__fallback-text">{{ social }}</span>
+                  </a>
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+
+            {%- if request.page_type == 'blog' or request.page_type == 'article' -%}
+              <li>
+                <a class="social-icons__link" href="{{ shop.url }}{{ blog.url }}.atom">
+                  {% include 'icon-rss' %}
+                  <span class="icon__fallback-text">RSS</span>
+                </a>
+              </li>
+            {%- endif -%}
+          </ul>
+        {%- else -%}
+          <div class="small--hide site-footer-item-align-right {% if show_selectors or show_payment_icons %}site-footer-item-center-vertically{% endif %}">
+            <small class="site-footer__copyright-content">&copy; {{ 'now' | date: "%Y" }}, {{ shop.name | link_to: routes.root_url }}</small>
+            <small class="site-footer__copyright-content site-footer__copyright-content-powered-by">{{ powered_by_link }}</small>
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- if show_selectors -%}
+        <div class="grid__item small--hide {{ payment_width_class }}">{{ payment_icon_markup }}</div>
+      {%- endif -%}
+
+      <div class="grid__item medium-up--hide {{ payment_width_class }} small--one-whole">{{ payment_icon_markup }}</div>
+ 
+      {%- if social_icons and show_selectors -%}
+        <div class="grid__item small--hide site-footer-item-align-right {% if show_payment_icons %}one-half{% endif %}">
+          <small class="site-footer__copyright-content">&copy; {{ 'now' | date: "%Y" }}, {{ shop.name | link_to: routes.root_url }}</small>
+          <small class="site-footer__copyright-content site-footer__copyright-content--powered-by">{{ powered_by_link }}</small>
+        </div>
+      {%- endif -%}
+
+      <div class="grid__item small--one-whole {{ copyright_show_class }} site-footer-item-align-right">
+        <div class="footer__copyright-content-payments-icons">
+          {% render 'icon-payments' %}
+        </div>
+        <div class="footer__copyright-content-text">
+          <small class="site-footer__copyright-content">&copy; {{ 'now' | date: "%Y" }}, {{ shop.name | link_to: routes.root_url }}</small>
+          <small class="site-footer__copyright-content site-footer__copyright-content--powered-by">{{ powered_by_link }}</small>
+        </div>
+      </div>
+
+   
+    </div>
+
+    
+  </div>
+
+
+    
+</footer>
+
+
+
+{% schema %}
+{
+  "name": {
+    "cs": "Zápatí",
+    "da": "Sidefod",
+    "de": "Fußzeile",
+    "en": "Footer",
+    "es": "Pie de página",
+    "fi": "Alatunniste",
+    "fr": "Pied de page",
+    "it": "Footer",
+    "ja": "フッター",
+    "ko": "바닥글",
+    "nb": "Footer",
+    "nl": "Voettekst",
+    "pl": "Stopka",
+    "pt-BR": "Rodapé",
+    "pt-PT": "Rodapé",
+    "sv": "Sidfot",
+    "th": "ส่วนท้าย",
+    "tr": "Altbilgi",
+    "vi": "Chân trang",
+    "zh-CN": "页脚",
+    "zh-TW": "頁尾"
+  },
+  "max_blocks": 4,
+  "settings": [
+    {
+		"type":"image_picker",
+        "id": "logo_footer",
+        "label": "Logo"
+    },
+	{
+		"type": "url",
+		"id": "link_logo",
+		"label": "Link Logo"
+	},
+    {
+      "type": "header",
+      "content": {
+        "cs": "Platební metody",
+        "da": "Betalingsmetoder",
+        "de": "Zahlungsmethoden",
+        "en": "Payment methods",
+        "es": "Métodos de pago",
+        "fi": "Maksutavat",
+        "fr": "Moyens de paiement",
+        "it": "Metodi di pagamento",
+        "ja": "決済方法",
+        "ko": "결제 방법",
+        "nb": "Betalingsmetoder",
+        "nl": "Betaalmethoden",
+        "pl": "Metody płatności",
+        "pt-BR": "Formas de pagamento",
+        "pt-PT": "Métodos de Pagamento",
+        "sv": "Betalningsmetoder",
+        "th": "วิธีการชำระเงิน",
+        "tr": "Ödeme yöntemleri",
+        "vi": "Phương thức thanh toán",
+        "zh-CN": "支付方式",
+        "zh-TW": "付款方式"
+      }
+    },
+    {
+      "type": "checkbox",
+      "id": "show_payment_icons",
+      "label": {
+        "cs": "Zobrazit ikony plateb",
+        "da": "Vis betalingsikoner",
+        "de": "Zahlungs-Buttons anzeigen",
+        "en": "Show payment icons",
+        "es": "Mostrar iconos de pago",
+        "fi": "Näytä maksukuvakkeet",
+        "fr": "Afficher les icônes de paiement",
+        "it": "Mostra le icone di pagamento",
+        "ja": "支払いアイコンを表示する",
+        "ko": "결제 아이콘 표시",
+        "nb": "Vis betalingsikoner",
+        "nl": "Betalingspictogrammen weergeven",
+        "pl": "Pokaż ikony płatności",
+        "pt-BR": "Exibir ícones de pagamento",
+        "pt-PT": "Mostrar ícones de pagamento",
+        "sv": "Visa betalningsikoner",
+        "th": "แสดงไอคอนการชำระเงิน",
+        "tr": "Ödeme simgelerini göster",
+        "vi": "Hiển thị biểu tượng thanh toán",
+        "zh-CN": "显示付款图标",
+        "zh-TW": "顯示付款圖示"
+      },
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": {
+        "cs": "Barva",
+        "da": "Farve",
+        "de": "Farbe",
+        "en": "Color",
+        "es": "Color",
+        "fi": "Väri",
+        "fr": "Couleur",
+        "it": "Colore",
+        "ja": "色",
+        "ko": "색상",
+        "nb": "Farge",
+        "nl": "Kleur",
+        "pl": "Kolor",
+        "pt-BR": "Cor",
+        "pt-PT": "Cor",
+        "sv": "Färg",
+        "th": "สี",
+        "tr": "Renk",
+        "vi": "Màu",
+        "zh-CN": "颜色",
+        "zh-TW": "顏色"
+      }
+    },
+    {
+      "type": "color",
+      "id": "color_footer_bg",
+      "label": {
+        "cs": "Pozadí",
+        "da": "Baggrund",
+        "de": "Hintergrund",
+        "en": "Background",
+        "es": "Fondo",
+        "fi": "Tausta",
+        "fr": "Couleur de fond",
+        "it": "Sfondo",
+        "ja": "背景",
+        "ko": "배경",
+        "nb": "Bakgrunn",
+        "nl": "Achtergrond",
+        "pl": "Tło",
+        "pt-BR": "Plano de fundo",
+        "pt-PT": "Fundo",
+        "sv": "Bakgrund",
+        "th": "พื้นหลัง",
+        "tr": "Arka plan",
+        "vi": "Nền",
+        "zh-CN": "背景",
+        "zh-TW": "背景"
+      },
+      "default": "#f6f6f6"
+    },
+    {
+      "type": "color",
+      "id": "color_footer_text",
+      "label": {
+        "cs": "Text",
+        "da": "Tekst",
+        "de": "Text",
+        "en": "Text",
+        "es": "Texto",
+        "fi": "Teksti",
+        "fr": "Texte",
+        "it": "Testo",
+        "ja": "テキスト",
+        "ko": "텍스트",
+        "nb": "Tekst",
+        "nl": "Tekst",
+        "pl": "Tekst",
+        "pt-BR": "Texto",
+        "pt-PT": "Texto",
+        "sv": "Text",
+        "th": "ข้อความ",
+        "tr": "Metin",
+        "vi": "Văn bản",
+        "zh-CN": "文本",
+        "zh-TW": "文字"
+      },
+      "default": "#333232"
+    },
+    {
+      "type": "header",
+      "content": {
+        "cs": "Selektor jazyka",
+        "da": "Sprogvælger",
+        "de": "Sprachauswahl",
+        "en": "Language Selector",
+        "es": "Selector de idioma",
+        "fi": "Kielenvalitsin",
+        "fr": "Sélecteur de langue",
+        "it": "Selettore lingua",
+        "ja": "言語セレクター",
+        "ko": "언어 선택기",
+        "nb": "Språkvelger",
+        "nl": "Taalkiezer",
+        "pl": "Selektor języka",
+        "pt-BR": "Seletor de idiomas",
+        "pt-PT": "Seletor de Idioma",
+        "sv": "Språkväljare",
+        "th": "ตัวเลือกภาษา",
+        "tr": "Dil Seçici",
+        "vi": "Hộp chọn ngôn ngữ",
+        "zh-CN": "语言选择器",
+        "zh-TW": "語言選擇器"
+      },
+      "info": {
+        "cs": "Pokud chcete přidat jazyk, přejděte na [jazykové nastavení.](/admin/settings/languages)",
+        "da": "Du kan tilføje et sprog ved at gå til dine [sprogindstillinger.](/admin/settings/languages)",
+        "de": "Gehe zu deinen [Spracheinstellungen](/admin/settings/languages), um eine Sprache hinzuzufügen.",
+        "en": "To add a language, go to your [language settings.](/admin/settings/languages)",
+        "es": "Para agregar un idioma, ve a tu[configuración de idioma](/admin/settings/languages)",
+        "fi": "Lisää kieli siirtymällä [kieliasetuksiin.](/admin/settings/languages)",
+        "fr": "Pour ajouter une langue, allez dans vos [paramètres de langue.](/admin/settings/languages).",
+        "it": "Per aggiungere una lingua, vai su [impostazioni della lingua.](/admin/settings/languages)",
+        "ja": "言語を追加するには、[言語設定](/admin/settings/languages) に移動します。",
+        "ko": "언어를 추가하려면 [언어 설정.](/admin/settings/languages)(으)로 이동하십시오.",
+        "nb": "For å legge til et språk, går du til dine [språkinnstillinger.](/admin/settings/languages)",
+        "nl": "Ga naar je [taalinstellingen.](/admin/settings/languages) om een taal toe te voegen.",
+        "pl": "Aby dodać język, przejdź do swoich [ustawień języka.](/admin/settings/languages)",
+        "pt-BR": "Para adicionar um idioma, acesse suas [configurações de idioma. ](/admin/settings/languages)",
+        "pt-PT": "Para adicionar um idioma, aceda a [definições de idioma.](/admin/settings/languages)",
+        "sv": "För att lägga till ett språk, gå till dina [språkinställningar.](/admin/settings/languages)",
+        "th": "หากต้องการเพิ่มภาษา ให้ไปที่ [การตั้งค่าภาษา ](/admin/settings/languages) ของคุณ",
+        "tr": "Dil eklemek için [dil ayarları](/admin/settings/languages) bölümünüze gidin.",
+        "vi": "Để thêm ngôn ngữ, mở [cài đặt ngôn ngữ.](/admin/settings/languages)",
+        "zh-CN": "若要添加语言，请转到您的 [语言设置。](/admin/settings/languages)",
+        "zh-TW": "若要新增語言，請前往 [語言設定。](/admin/settings/languages)"
+      }
+    },
+    {
+      "type": "checkbox",
+      "id": "show_locale_selector",
+      "label": {
+        "cs": "Zobrazit selektor jazyka",
+        "da": "Vis sprogvælger",
+        "de": "Sprachauswahl anzeigen",
+        "en": "Show language selector",
+        "es": "Mostrar el selector de idioma",
+        "fi": "Näytä kielenvalitsin",
+        "fr": "Afficher le sélecteur de langue",
+        "it": "Mostra selettore lingua",
+        "ja": "言語セレクターを表示する",
+        "ko": "언어 선택기 표시",
+        "nb": "Vis språkvelger",
+        "nl": "Taalkiezer weergeven",
+        "pl": "Pokaż selektor języka",
+        "pt-BR": "Exibir seletor de idioma",
+        "pt-PT": "Mostrar seletor de idioma",
+        "sv": "Visa språkväljare",
+        "th": "แสดงตัวเลือกภาษา",
+        "tr": "Dil seçiciyi göster",
+        "vi": "Hiển thị hộp chọn ngôn ngữ",
+        "zh-CN": "显示语言选择器",
+        "zh-TW": "顯示語言選擇器"
+      },
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": {
+        "cs": "Selektor země/oblasti",
+        "da": "Land/område-vælger",
+        "de": "Auswahl für Land/Region",
+        "en": "Country/region Selector",
+        "es": "Selector de país/región",
+        "fi": "Maa-/aluevalitsin",
+        "fr": "Sélecteur de pays/région",
+        "it": "Selettore paese/regione",
+        "ja": "国/地域セレクター",
+        "ko": "국가/지역 선택기",
+        "nb": "Land-/regionvelger",
+        "nl": "Kiezer voor land/regio",
+        "pl": "Selektor kraju/regionu",
+        "pt-BR": "Seletor de país/região",
+        "pt-PT": "Seletor de país/região",
+        "sv": "Land/region-väljare",
+        "th": "ตัวเลือกประเทศ/ภูมิภาค",
+        "tr": "Ülke/Bölge Seçici",
+        "vi": "Hộp chọn quốc gia/vùng",
+        "zh-CN": "国家/地区选择器",
+        "zh-TW": "國家/地區選擇器"
+      },
+      "info": {
+        "cs": "Pokud chcete přidat zemi nebo oblast, přejděte na [nastavení plateb.](/admin/settings/payments)",
+        "da": "For at tilføje et land/område skal du gå til dine [betalingsindstillinger.](/admin/settings/payments)",
+        "de": "Gehe zu deinen [Zahlungseinstellungen](/admin/settings/payments), um ein Land/eine Region hinzuzufügen.",
+        "en": "To add a country/region, go to your [payment settings.](/admin/settings/payments)",
+        "es": "Para agregar una país/región, ve a tu [configuración de pago.](/admin/settings/payments)",
+        "fi": "Lisää maa/alue siirtymällä omiin [maksuasetuksiisi.](/admin/settings/payments)",
+        "fr": "Pour ajouter un pays/une région, allez dans vos [paramètres de paiement.](/admin/settings/payments)",
+        "it": "Per aggiungere un paese/regione, vai a [impostazioni pagamento.](/admin/settings/payments)",
+        "ja": "国/地域を追加するには、[決済設定](/admin/settings/payments) に移動します。",
+        "ko": "국가/지역을 추가하려면 [결제 설정](/admin/settings/payments)(으)로 이동하십시오.",
+        "nb": "For å legge til et land/region må du gå til [betalingsinnstillingene.](/admin/settings/payments)",
+        "nl": "Ga naar je [betaalinstellingen.](/admin/settings/payments) om een land/regio toe te voegen.",
+        "pl": "Aby dodać kraj/region, przejdź do swoich [ustawień płatności.](/admin/settings/payments)",
+        "pt-BR": "Para adicionar um país/região, acesse as [configurações de pagamento.](/admin/settings/payments)",
+        "pt-PT": "Para adicionar um país/região, aceda às [definições de pagamento.](/admin/settings/payments)",
+        "sv": "För att lägga till land/region går du till dina [betalningsinställningar.](/admin/settings/payments)",
+        "th": "หากต้องการเพิ่มประเทศ/ภูมิภาค ให้ไปที่ [การตั้งค่าการชำระเงิน](/admin/settings/payments)",
+        "tr": "Ülke/bölge eklemek için [ödeme ayarlarınıza](/admin/settings/payments) gidin.",
+        "vi": "Để thêm quốc gia/vùng, vào [cài đặt thanh toán.](/admin/settings/payments)",
+        "zh-CN": "若要添加国家/地区，请转到 [支付设置。](/admin/settings/payments)",
+        "zh-TW": "若要新增國家/地區，請前往 [付款設定。](/admin/settings/payments)"
+      }
+    },
+    {
+      "type": "checkbox",
+      "id": "show_currency_selector",
+      "label": {
+        "cs": "Zobrazit selektor země/oblasti",
+        "da": "Vis land/område-vælger",
+        "de": "Auswahl für Land/Region anzeigen",
+        "en": "Show country/region selector",
+        "es": "Mostrar selector de país/región",
+        "fi": "Näytä maa-/aluevalitsin",
+        "fr": "Afficher le sélecteur de pays/région",
+        "it": "Mostra selettore paese/regione",
+        "ja": "国/地域セレクターを表示する",
+        "ko": "국가/지역 선택기 표시",
+        "nb": "Vis land-/regionvelger",
+        "nl": "Kiezer voor land/regio weergeven",
+        "pl": "Pokaż selektor kraju/regionu",
+        "pt-BR": "Exibir seletor de país/região",
+        "pt-PT": "Mostrar seletor de país/região",
+        "sv": "Visa land/region-väljare",
+        "th": "แสดงตัวเลือกประเทศ/ภูมิภาค",
+        "tr": "Ülke/bölge seçiciyi göster",
+        "vi": "Hiển thị hộp chọn quốc gia/vùng",
+        "zh-CN": "显示国家/地区选择器",
+        "zh-TW": "顯示國家/地區選擇器"
+      },
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "link_list",
+      "name": {
+        "cs": "Nabídka",
+        "da": "Menu",
+        "de": "Menü",
+        "en": "Menu",
+        "es": "Menú",
+        "fi": "Valikko",
+        "fr": "Menu",
+        "it": "Menu",
+        "ja": "メニュー",
+        "ko": "메뉴",
+        "nb": "Meny",
+        "nl": "Menu",
+        "pl": "Menu",
+        "pt-BR": "Menu",
+        "pt-PT": "Menu",
+        "sv": "Meny",
+        "th": "เมนู",
+        "tr": "Menü",
+        "vi": "Menu",
+        "zh-CN": "菜单",
+        "zh-TW": "選單"
+      },
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": {
+            "cs": "Nadpis",
+            "da": "Overskrift",
+            "de": "Überschrift",
+            "en": "Heading",
+            "es": "Título",
+            "fi": "Otsake",
+            "fr": "Titre",
+            "it": "Heading",
+            "ja": "見出し",
+            "ko": "제목",
+            "nb": "Overskrift",
+            "nl": "Kop",
+            "pl": "Nagłówek",
+            "pt-BR": "Título",
+            "pt-PT": "Título",
+            "sv": "Rubrik",
+            "th": "ส่วนหัว",
+            "tr": "Başlık",
+            "vi": "Tiêu đề",
+            "zh-CN": "标题",
+            "zh-TW": "標題"
+          },
+          "default": {
+            "cs": "Rychlé odkazy",
+            "da": "Genvejslinks",
+            "de": "Quick-Links",
+            "en": "Quick links",
+            "es": "Enlaces rápidos",
+            "fi": "Pikalinkit",
+            "fr": "Liens rapides",
+            "it": "Link rapidi",
+            "ja": "クイックリンク",
+            "ko": "빠른 링크",
+            "nb": "Hurtigkoblinger",
+            "nl": "Snelle links",
+            "pl": "Szybkie linki",
+            "pt-BR": "Links rápidos",
+            "pt-PT": "Ligações rápidas",
+            "sv": "Snabblänkar",
+            "th": "ลิงก์ด่วน",
+            "tr": "Hızlı bağlantılar",
+            "vi": "Liên kết nhanh",
+            "zh-CN": "快速链接",
+            "zh-TW": "快速連結"
+          }
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": {
+            "cs": "Nabídka",
+            "da": "Menu",
+            "de": "Menü",
+            "en": "Menu",
+            "es": "Menú",
+            "fi": "Valikko",
+            "fr": "Menu",
+            "it": "Menu",
+            "ja": "メニュー",
+            "ko": "메뉴",
+            "nb": "Meny",
+            "nl": "Menu",
+            "pl": "Menu",
+            "pt-BR": "Menu",
+            "pt-PT": "Menu",
+            "sv": "Meny",
+            "th": "เมนู",
+            "tr": "Menü",
+            "vi": "Menu",
+            "zh-CN": "菜单",
+            "zh-TW": "選單"
+          },
+          "default": "footer"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": {
+        "cs": "Text",
+        "da": "Tekst",
+        "de": "Text",
+        "en": "Text",
+        "es": "Texto",
+        "fi": "Teksti",
+        "fr": "Texte",
+        "it": "Testo",
+        "ja": "テキスト",
+        "ko": "텍스트",
+        "nb": "Tekst",
+        "nl": "Tekst",
+        "pl": "Tekst",
+        "pt-BR": "Texto",
+        "pt-PT": "Texto",
+        "sv": "Text",
+        "th": "ข้อความ",
+        "tr": "Metin",
+        "vi": "Văn bản",
+        "zh-CN": "文本",
+        "zh-TW": "文字"
+      },
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": {
+            "cs": "Nadpis",
+            "da": "Overskrift",
+            "de": "Überschrift",
+            "en": "Heading",
+            "es": "Título",
+            "fi": "Otsake",
+            "fr": "Titre",
+            "it": "Heading",
+            "ja": "見出し",
+            "ko": "제목",
+            "nb": "Overskrift",
+            "nl": "Kop",
+            "pl": "Nagłówek",
+            "pt-BR": "Título",
+            "pt-PT": "Título",
+            "sv": "Rubrik",
+            "th": "ส่วนหัว",
+            "tr": "Başlık",
+            "vi": "Tiêu đề",
+            "zh-CN": "标题",
+            "zh-TW": "標題"
+          },
+          "default": {
+            "cs": "Informujte o svém obchodu",
+            "da": "Fortæl om din virksomhed",
+            "de": "Rede über dein Unternehmen",
+            "en": "Talk about your business",
+            "es": "Habla sobre tu negocio",
+            "fi": "Kerro yrityksestäsi",
+            "fr": "Parlez de votre entreprise",
+            "it": "Parla della tua attività commerciale",
+            "ja": "あなたのビジネスについて語る",
+            "ko": "비즈니스에 대한 이야기하기",
+            "nb": "Snakk om bedriften din",
+            "nl": "Vertel over je bedrijf",
+            "pl": "Opowiedz o swojej firmie",
+            "pt-BR": "Fale sobre o seu negócio",
+            "pt-PT": "Fale sobre o seu negócio",
+            "sv": "Prata om ditt företag",
+            "th": "พูดถึงธุรกิจของคุณ",
+            "tr": "İşletmenizden bahsedin",
+            "vi": "Chia sẻ về doanh nghiệp của bạn",
+            "zh-CN": "介绍您的业务",
+            "zh-TW": "描述您的商家"
+          }
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": {
+            "cs": "Text",
+            "da": "Tekst",
+            "de": "Text",
+            "en": "Text",
+            "es": "Texto",
+            "fi": "Teksti",
+            "fr": "Texte",
+            "it": "Testo",
+            "ja": "テキスト",
+            "ko": "텍스트",
+            "nb": "Tekst",
+            "nl": "Tekst",
+            "pl": "Tekst",
+            "pt-BR": "Texto",
+            "pt-PT": "Texto",
+            "sv": "Text",
+            "th": "ข้อความ",
+            "tr": "Metin",
+            "vi": "Văn bản",
+            "zh-CN": "文本",
+            "zh-TW": "文字"
+          },
+          "default": {
+            "cs": "<p>Popište zákazníkům podrobně svůj obchod, propagační akce nebo značky nabízeného zboží.</p>",
+            "da": "<p>Del butiksoplysninger, reklamer eller brandindhold med dine kunder.</p>",
+            "de": "<p>Teile deine Shop-Details, Werbeaktionen oder Markeninhalte mit deinen Kunden.</p>",
+            "en": "<p>Share store details, promotions, or brand content with your customers.</p>",
+            "es": "<p>Comparte detalles de la tienda, promociones o contenido de la marca con tus clientes.</p>",
+            "fi": "<p>Jaa myymälän tiedot, tarjoukset tai brändin sisältö asiakkaittesi kanssa.</p>",
+            "fr": "<p>Partagez les détails de la boutique, les promotions ou le contenu de la marque avec vos clients.</p>",
+            "it": "<p>Condividi dettagli del negozio, promozioni o contenuti del brand con i clienti.</p>",
+            "ja": "<p>ストア詳細、プロモーション、ブランドのコンテンツをお客様と共有する。</p>",
+            "ko": "<p>스토어 세부 정보, 프로모션 또는 브랜드 콘텐츠를 고객과 공유하십시오.</p>",
+            "nb": "<p>Del butikkdetaljer, kampanjer eller merkevareinnhold med kundene dine.</p>",
+            "nl": "<p>Deel winkeldetails, promoties of merkcontent met je klanten.</p>",
+            "pl": "<p>Poinformuj swoich klientów o sklepie, promocjach lub zawartości marki.</p>",
+            "pt-BR": "<p>Compartilhe informações da loja, promoções ou conteúdo da marca com seus clientes.</p>",
+            "pt-PT": "<p>Partilhe detalhes da loja, promoções ou conteúdo de marca com os seus clientes.</p>",
+            "sv": "<p>Dela butikens detaljer, kampanjer eller varumärkesinnehåll med dina kunder.</p>",
+            "th": "<p>แชร์รายละเอียดร้านค้า โปรโมชัน หรือเนื้อหาแบรนด์กับลูกค้าของคุณ</p>",
+            "tr": "<p>Mağaza ayrıntılarını, promosyonları, marka içeriğini müşterilerinizle paylaşın.</p>",
+            "vi": "<p>Chia sẻ thông tin cửa hàng, khuyến mãi hoặc nội dung thương hiệu với khách hàng.</p>",
+            "zh-CN": "<p>与您的客户共享商店详细信息、促销信息或品牌内容。</p>",
+            "zh-TW": "<p>與顧客分享商店的詳細資訊、宣傳活動或品牌內容。</p>"
+          }
+        }
+      ]
+    },
+    {
+      "type": "newsletter",
+      "limit": 1,
+      "name": {
+        "cs": "Přihlášení k odběru novinek",
+        "da": "Tilmelding til nyhedsbrev",
+        "de": "Newsletter-Anmeldung",
+        "en": "Newsletter signup",
+        "es": "Suscripción al boletín",
+        "fi": "Uutiskirjeen tilaus",
+        "fr": "Inscription",
+        "it": "Iscriviti alla Newsletter",
+        "ja": "ニュースレターの登録",
+        "ko": "뉴스레터 신청",
+        "nb": "Registrering for nyhetsbrev",
+        "nl": "Nieuwsbriefaanmelding",
+        "pl": "Rejestracja do newslettera",
+        "pt-BR": "Assinatura da newsletter",
+        "pt-PT": "Registo na newsletter",
+        "sv": "Nyhetsbrevsregistrering",
+        "th": "การสมัครรับจดหมายข่าว",
+        "tr": "Bülten aboneliği",
+        "vi": "Đăng ký nhận bản tin",
+        "zh-CN": "新闻通讯注册",
+        "zh-TW": "訂閱電子報"
+      },
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": {
+            "cs": "Nadpis",
+            "da": "Overskrift",
+            "de": "Überschrift",
+            "en": "Heading",
+            "es": "Título",
+            "fi": "Otsake",
+            "fr": "Titre",
+            "it": "Heading",
+            "ja": "見出し",
+            "ko": "제목",
+            "nb": "Overskrift",
+            "nl": "Kop",
+            "pl": "Nagłówek",
+            "pt-BR": "Título",
+            "pt-PT": "Título",
+            "sv": "Rubrik",
+            "th": "ส่วนหัว",
+            "tr": "Başlık",
+            "vi": "Tiêu đề",
+            "zh-CN": "标题",
+            "zh-TW": "標題"
+          },
+          "info": {
+            "cs": "Odběratelé budou přidáni do vašeho [seznamu zákazníků, kteří přijímají marketing.](/admin/customers?query=&accepts_marketing=1)",
+            "da": "Abonnenter bliver føjet til [kundelisten](/admin/customers?query=&accepts_marketing=1) for \"accepterer markedsføring\".",
+            "de": "Abonnenten werden zu deiner Liste „akzeptiert Marketingmaterial“ hinzugefügt [Kundenliste.](/admin/customers?query=&accepts_marketing=1)",
+            "en": "Subscribers will be added to your “accepts marketing” [customer list.](/admin/customers?query=&accepts_marketing=1)",
+            "es": "Se añadirá los suscriptores a tu [lista de clientes.](/admin/customers?query=&accepts_marketing=1) \"acepta marketing\".",
+            "fi": "Tilaajat lisätään \"hyväksyy markkinointi\" [-asiakasluetteloosi. ](/admin/customers?query=&accepts_marketing=1)",
+            "fr": "Les abonnés seront ajoutés à votre [liste de clients](/admin/customers?query=&accepts_marketing=1) « Accepte le marketing ».",
+            "it": "Gli iscritti verranno aggiunti al tuo [elenco clienti.](/admin/customers?query=&accepts_marketing=1) «accetta marketing»",
+            "ja": "購読者は「マーケティングを受け入れる」[顧客リスト](/admin/customers?query=&accepts_marketing=1) に追加されます。",
+            "ko": "가입자가 \"마케팅 수락\" [고객 목록.](/admin/customers?query=&accepts_marketing=1)에 추가됩니다.",
+            "nb": "Abonnenter vil bli lagt til i «aksepterer markedsføring» [kundeliste.](/admin/customers?query=&accepts_marketing=1)",
+            "nl": "Abonnees worden toegevoegd aan je \"accepteert marketing\" [klantenlijst.](/admin/customers?query=&accepts_marketing=1)",
+            "pl": "Subskrybenci zostaną dodani do Twojej [listy klientów \"akceptujących marketing\".](/admin/customers?query=&accepts_marketing=1)",
+            "pt-BR": "Os assinantes serão adicionados à “aceita marketing” [lista de clientes. ](/admin/customers?query=&accepts_marketing=1)",
+            "pt-PT": "Os subscritores serão adicionados à sua lista de \"aceitam marketing\" [lista de clientes.](/admin/customers?query=&accepts_marketing=1)",
+            "sv": "Prenumeranter läggs till i din \"accepterar marknadsföring\" [kundlista. ](/admin/customers?query=&accepts_marketing=1)",
+            "th": "ระบบจะเพิ่มผู้สมัครใช้งานไปยังส่วน “ยอมรับการตลาด” ของคุณ [รายชื่อลูกค้า](/admin/customers?query=&accepts_marketing=1)",
+            "tr": "Aboneler \"pazarlama kabul ediyor\" [müşteri listenize](/admin/customers?query=&accepts_marketing=1) eklenir.",
+            "vi": "Người đăng ký sẽ được thêm vào [danh sách khách hàng](/admin/customers?query=&accepts_marketing=1) \"chấp nhận tiếp thị\".",
+            "zh-CN": "订阅者将被添加到您的“接受营销”[客户列表](/admin/customers?query=&accepts_marketing=1)中。",
+            "zh-TW": "系統會將訂閱者新增至您的「接受行銷」[客戶清單。](/admin/customers?query=&accepts_marketing=1)"
+          },
+          "default": {
+            "cs": "Novinky",
+            "da": "Nyhedsbrev",
+            "de": "Newsletter",
+            "en": "Newsletter",
+            "es": "Boletín",
+            "fi": "Uutiskirje",
+            "fr": "Newsletter",
+            "it": "Newsletter",
+            "ja": "ニュースレター",
+            "ko": "뉴스레터",
+            "nb": "Nyhetsbrev",
+            "nl": "Nieuwsbrief",
+            "pl": "Newsletter",
+            "pt-BR": "Newsletter",
+            "pt-PT": "Newsletter",
+            "sv": "Nyhetsbrev",
+            "th": "จดหมายข่าว",
+            "tr": "Bülten",
+            "vi": "Bản tin",
+            "zh-CN": "新闻通讯",
+            "zh-TW": "電子報"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
