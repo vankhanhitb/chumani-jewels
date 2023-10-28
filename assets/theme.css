@@ -7071,7 +7071,9 @@ label {text-transform: uppercase; font-size: 14px !important;}
 .mega-title {letter-spacing: -1px !important;}
 a:hover {color: #000 !important;}
 .price.price--listing {margin-top:3px;}
-.product-form__cart-submit:hover {background-color: #372d57 !important}
+.klaviyo-form .needsclick button.needsclick:hover,
+.btn--tertiary:not([disabled]):hover, .btn--tertiary:focus, 
+.product-form__cart-submit:hover,
 .slideshow__btn:hover {background-color: #e4c088 !important}
 .site-footer .needsclick.kl-private-reset-css-Xuajs1 {
     justify-content: flex-start !important;
@@ -7113,6 +7115,8 @@ a:hover {color: #000 !important;}
 .qr-code img{
   width: 70px;
 }
+
+
 /**
  * @TODO: Customize style for SlideShow
  */
@@ -7149,3 +7153,4 @@ a:hover {color: #000 !important;}
     display: block;
   }
 }
+
