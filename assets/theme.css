@@ -7071,10 +7071,11 @@ label {text-transform: uppercase; font-size: 14px !important;}
 .mega-title {letter-spacing: -1px !important;}
 a:hover {color: #000 !important;}
 .price.price--listing {margin-top:3px;}
+.return-link-wrapper .btn--has-icon-before:hover,
 .klaviyo-form .needsclick button.needsclick:hover,
 .btn--tertiary:not([disabled]):hover, .btn--tertiary:focus, 
 .product-form__cart-submit:hover,
-.slideshow__btn:hover {background-color: #e4c088 !important}
+.slideshow__btn:hover {background-color: #e4c088 !important;border-color: #e4c088 !important;}
 .site-footer .needsclick.kl-private-reset-css-Xuajs1 {
     justify-content: flex-start !important;
     margin-top: -2px !important;
@@ -7153,4 +7154,33 @@ a:hover {color: #000 !important;}
     display: block;
   }
 }
-
+/**
+ * @TODO: BLogs Post
+ */
+.template-article .grid { 
+  max-width: 680px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.template-article .grid__item{
+  padding-left: 0px;   
+}
+@media only screen and (min-width: 750px){
+  .template-article .medium-up--push-one-twelfth{
+    left: 0px;
+  }
+  .template-article .medium-up--five-sixths{
+    width: 100%;
+  }
+}
+/*THIS FOR font size Blog*/
+#shopify-section-article-template .rte p,
+#shopify-section-article-template .article__date { font-size: 18px; }
+@media only screen and (max-width: 749px){
+  .grid__item .article__title{
+    font-size: 40px;
+  }
+  #shopify-section-article-template .rte p,
+  #shopify-section-article-template .article__date { font-size: 16px; }
+}
